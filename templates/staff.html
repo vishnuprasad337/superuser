@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Management | Hotel Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --dark: #2d3748;
+            --light: #f8f9fa;
+            --sidebar-width: 280px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 25px 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .sidebar-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .sidebar-header p {
+            margin: 10px 0 0;
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .menu-item {
+            padding: 12px 25px;
+            margin: 5px 15px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .menu-item i {
+            width: 24px;
+            font-size: 1.2rem;
+        }
+
+        .menu-item:hover {
+            background: rgba(102,126,234,0.1);
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .menu-item.active {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(102,126,234,0.3);
+        }
+
+        .menu-badge {
+            margin-left: auto;
+            background: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .menu-item.active .menu-badge {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        /* Header Card */
+        .header-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .header-gradient {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 30px;
+        }
+
+        .header-gradient h2 {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .header-gradient p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+        }
+
+        /* Stats Cards */
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .stat-card .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Tab Content Panels */
+        .tab-panel {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .card-header-custom {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+
+        .card-header-custom i {
+            margin-right: 10px;
+        }
+
+        .card-body-custom {
+            padding: 20px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(102,126,234,0.25);
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+
+        .table-custom {
+            margin-bottom: 0;
+        }
+
+        .table-custom thead th {
+            background: #f8f9fa;
+            border-bottom: 2px solid var(--primary);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .badge-role {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-manager { background: #ffc107; color: #856404; }
+        .badge-staff { background: #17a2b8; color: white; }
+        .badge-housekeeping { background: #28a745; color: white; }
+        .badge-reception { background: #fd7e14; color: white; }
+        .badge-supervisor { background: #6f42c1; color: white; }
+
+        .task-item {
+            background: #f8f9fa;
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .task-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .task-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+
+        .task-description {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .task-meta {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 8px;
+        }
+
+        .task-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .status-pending { background: #ffc107; color: #856404; }
+        .status-completed { background: #28a745; color: white; }
+        .status-in-progress { background: #17a2b8; color: white; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            .menu-toggle {
+                display: block;
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 1100;
+                background: white;
+                border: none;
+                border-radius: 10px;
+                padding: 10px;
+                cursor: pointer;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            }
+        }
+
+        @media (min-width: 769px) {
+            .menu-toggle {
+                display: none;
+            }
+        }
+
+        .menu-toggle {
+            display: none;
+        }
+
+        .back-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: white;
+            border-radius: 50px;
+            padding: 12px 24px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            color: var(--secondary);
+        }
+
+        .back-btn i {
+            margin-right: 8px;
+        }
+
+        .toast-notify {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 280px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn-sm-action {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+        }
+        
+        .email-display {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .staff-count-badge {
+            font-size: 0.9rem;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+
+<button class="menu-toggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+</button>
+
+<!-- Sidebar Navigation -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3><i class="fas fa-hotel"></i> Hotel Staff</h3>
+        <p>Management System</p>
+    </div>
+    <div class="sidebar-menu">
+        <div class="menu-item active" data-tab="departments">
+            <i class="fas fa-building"></i>
+            <span>Departments</span>
+            <span class="menu-badge" id="sidebarDeptBadge">0</span>
+        </div>
+        <div class="menu-item" data-tab="staff">
+            <i class="fas fa-users"></i>
+            <span>Staff Members</span>
+            <span class="menu-badge" id="sidebarStaffBadge">0</span>
+        </div>
+        <div class="menu-item" data-tab="tasks">
+            <i class="fas fa-tasks"></i>
+            <span>Tasks Management</span>
+            <span class="menu-badge" id="sidebarTasksBadge">0</span>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Header -->
+    <div class="header-card">
+        <div class="header-gradient">
+            <h2><i class="fas fa-users"></i> Staff Management System</h2>
+            <p><i class="fas fa-user-tie"></i> Manage departments, staff members, and assign tasks efficiently</p>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="stat-card" onclick="switchToTab('departments')">
+                <i class="fas fa-building" style="color: var(--primary);"></i>
+                <div class="stat-number" id="totalDepartments">0</div>
+                <div class="stat-label">Total Departments</div>
+                <small class="text-muted">Click to view</small>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="stat-card" onclick="switchToTab('staff')">
+                <i class="fas fa-users" style="color: var(--success);"></i>
+                <div class="stat-number" id="totalStaff">0</div>
+                <div class="stat-label">Staff Members</div>
+                <small class="text-muted">Click to view</small>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="stat-card" onclick="switchToTab('tasks')">
+                <i class="fas fa-tasks" style="color: var(--warning);"></i>
+                <div class="stat-number" id="totalTasks">0</div>
+                <div class="stat-label">Active Tasks</div>
+                <small class="text-muted">Click to view</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Departments Tab Panel -->
+    <div id="departmentsPanel" class="tab-panel active">
+        <div class="row">
+            <div class="col-lg-5 mb-4">
+                <div class="main-card">
+                    <div class="card-header-custom">
+                        <i class="fas fa-plus-circle"></i> Create New Department
+                    </div>
+                    <div class="card-body-custom">
+                        <form id="addDepartmentForm">
+                            <div class="mb-3">
+                                <label class="form-label">Department Name</label>
+                                <input type="text" class="form-control" id="deptName" required placeholder="e.g., Housekeeping, Front Desk, Kitchen">
+                            </div>
+                            <button type="submit" class="btn btn-primary-custom w-100">
+                                <i class="fas fa-save"></i> Create Department
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7 mb-4">
+                <div class="main-card">
+                    <div class="card-header-custom">
+                        <i class="fas fa-list"></i> All Departments
+                    </div>
+                    <div class="card-body-custom">
+                        <div class="table-responsive">
+                            <table class="table table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Department Name</th>
+                                        <th>Staff Count</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="departmentsList">
+                                    <tr>
+                                        <td colspan="4" class="text-center">Loading departments...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Staff Members Tab Panel -->
+    <div id="staffPanel" class="tab-panel">
+        <div class="row">
+            <div class="col-lg-5 mb-4">
+                <div class="main-card">
+                    <div class="card-header-custom">
+                        <i class="fas fa-user-plus"></i> Add New Staff Member
+                    </div>
+                    <div class="card-body-custom">
+                        <form id="addStaffForm">
+                            <div class="mb-3">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="staffName" required placeholder="e.g., John Doe">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="staffEmail" required placeholder="john@example.com">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="staffPhone" placeholder="+1234567890">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Department</label>
+                                <select class="form-select" id="staffDepartment" required>
+                                    <option value="">Select Department</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Role</label>
+                                <select class="form-select" id="staffRole" required>
+                                    <option value="Staff">Staff Member</option>
+                                    <option value="Manager">Department Manager</option>
+                                    <option value="Housekeeping">Housekeeping Staff</option>
+                                    <option value="Reception">Receptionist</option>
+                                    <option value="Supervisor">Supervisor</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                <input type="password" class="form-control" id="staffPassword" required placeholder="••••••••">
+                            </div>
+                            <button type="submit" class="btn btn-primary-custom w-100">
+                                <i class="fas fa-user-check"></i> Add Staff Member
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7 mb-4">
+                <div class="main-card">
+                    <div class="card-header-custom">
+                        <i class="fas fa-users"></i> Staff Directory
+                    </div>
+                    <div class="card-body-custom">
+                        <div class="table-responsive">
+                            <table class="table table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Department</th>
+                                        <th>Role</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="staffList">
+                                    <tr>
+                                        <td colspan="6" class="text-center">Loading staff members...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks Management Tab Panel -->
+    <div id="tasksPanel" class="tab-panel">
+        <div class="row">
+            <div class="col-lg-5 mb-4">
+                <div class="main-card">
+                    <div class="card-header-custom">
+                        <i class="fas fa-plus-circle"></i> Assign New Task
+                    </div>
+                    <div class="card-body-custom">
+                        <form id="assignTaskForm">
+                            <div class="mb-3">
+                                <label class="form-label">Assign To</label>
+                                <select class="form-select" id="taskStaff" required>
+                                    <option value="">Select Staff Member</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Task Title</label>
+                                <input type="text" class="form-control" id="taskTitle" required placeholder="e.g., Clean Room 101">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" id="taskDescription" rows="4" placeholder="Detailed description of the task..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary-custom w-100">
+                                <i class="fas fa-paper-plane"></i> Assign Task
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7 mb-4">
+                <div class="main-card">
+                    <div class="card-header-custom">
+                        <i class="fas fa-list-check"></i> Active Tasks
+                    </div>
+                    <div class="card-body-custom" id="tasksList">
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                            <p>No tasks assigned yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<a href="/dashboard/" class="back-btn">
+    <i class="fas fa-arrow-left"></i> Back to Dashboard
+</a>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let departmentsData = [];
+    let staffData = [];
+
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+
+    function showToast(message, type = 'success') {
+        let toastContainer = document.getElementById('toastContainer');
+        if (!toastContainer) {
+            const div = document.createElement('div');
+            div.id = 'toastContainer';
+            div.className = 'toast-notify';
+            document.body.appendChild(div);
+            toastContainer = div;
+        }
+        
+        const toastId = 'toast-' + Date.now();
+        const bgClass = type === 'success' ? 'bg-success' : (type === 'error' ? 'bg-danger' : 'bg-info');
+        const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle');
+        
+        const toastHtml = `
+            <div id="${toastId}" class="toast align-items-center text-white ${bgClass} border-0 mb-2" role="alert" data-bs-autohide="true" data-bs-delay="4000">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas ${icon} me-2"></i>
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `;
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+        const toastEl = document.getElementById(toastId);
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+        toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+    }
+
+    function switchToTab(tabName) {
+        // Update sidebar menu items
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.classList.remove('active');
+            if (item.getAttribute('data-tab') === tabName) {
+                item.classList.add('active');
+            }
+        });
+        
+        // Update panels
+        document.querySelectorAll('.tab-panel').forEach(panel => {
+            panel.classList.remove('active');
+        });
+        document.getElementById(`${tabName}Panel`).classList.add('active');
+        
+        // Close sidebar on mobile after selection
+        if (window.innerWidth <= 768) {
+            document.getElementById('sidebar').classList.remove('open');
+        }
+    }
+
+    // Add click handlers to sidebar menu items
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const tabName = item.getAttribute('data-tab');
+            switchToTab(tabName);
+        });
+    });
+
+    async function loadDepartments() {
+        try {
+            const response = await fetch('/get-departments/');
+            const departments = await response.json();
+            departmentsData = departments;
+            
+            const deptList = document.getElementById('departmentsList');
+            const deptSelect = document.getElementById('staffDepartment');
+            
+            if (!departments || departments.length === 0) {
+                deptList.innerHTML = '<tr><td colspan="4" class="text-center">No departments found</td></tr>';
+                deptSelect.innerHTML = '<option value="">No departments available</option>';
+                document.getElementById('totalDepartments').textContent = '0';
+                document.getElementById('sidebarDeptBadge').textContent = '0';
+                return;
+            }
+            
+            document.getElementById('totalDepartments').textContent = departments.length;
+            document.getElementById('sidebarDeptBadge').textContent = departments.length;
+            
+            const staffCountByDept = {};
+            if (staffData && staffData.length) {
+                staffData.forEach(staff => {
+                    if (staff.department_id) {
+                        staffCountByDept[staff.department_id] = (staffCountByDept[staff.department_id] || 0) + 1;
+                    }
+                });
+            }
+            
+            deptList.innerHTML = departments.map(dept => `
+                <tr>
+                    <td>${dept.id}</td>
+                    <td><strong>${escapeHtml(dept.name)}</strong></td>
+                    <td><span class="badge bg-info staff-count-badge">${staffCountByDept[dept.id] || 0}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewDepartmentStaff(${dept.id})">
+                            <i class="fas fa-eye"></i> View Staff
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            
+            deptSelect.innerHTML = '<option value="">Select Department</option>' + 
+                departments.map(dept => `<option value="${dept.id}">${escapeHtml(dept.name)}</option>`).join('');
+                
+        } catch (error) {
+            console.error('Error loading departments:', error);
+            showToast('Failed to load departments', 'error');
+        }
+    }
+
+    async function loadStaff() {
+        try {
+            const response = await fetch('/get-staff/');
+            const staff = await response.json();
+            staffData = staff;
+            
+            const staffList = document.getElementById('staffList');
+            const staffSelect = document.getElementById('taskStaff');
+            
+            if (!staff || staff.length === 0) {
+                staffList.innerHTML = '<tr><td colspan="6" class="text-center">No staff members found</td></tr>';
+                staffSelect.innerHTML = '<option value="">No staff available</option>';
+                document.getElementById('totalStaff').textContent = '0';
+                document.getElementById('sidebarStaffBadge').textContent = '0';
+                return;
+            }
+            
+            document.getElementById('totalStaff').textContent = staff.length;
+            document.getElementById('sidebarStaffBadge').textContent = staff.length;
+            
+            const deptMap = {};
+            departmentsData.forEach(dept => {
+                deptMap[dept.id] = dept.name;
+            });
+            
+            staffList.innerHTML = staff.map(member => {
+                const departmentName = member.department_name || deptMap[member.department_id] || 'N/A';
+                const email = member.email && member.email !== '-' ? member.email : 'Not provided';
+                const role = member.role || 'Staff';
+                const roleClass = role.toLowerCase().replace(/\s+/g, '-');
+                
+                return `
+                    <tr>
+                        <td>${member.id}</td>
+                        <td><strong>${escapeHtml(member.name)}</strong></td>
+                        <td><span class="email-display">${escapeHtml(email)}</span></td>
+                        <td><span class="badge bg-primary">${escapeHtml(departmentName)}</span></td>
+                        <td><span class="badge-role badge-${roleClass}">${escapeHtml(role)}</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline-info btn-sm-action" onclick="viewStaffDetails(${member.id})" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger btn-sm-action" onclick="deleteStaff(${member.id})" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            staffSelect.innerHTML = '<option value="">Select Staff Member</option>' + 
+                staff.map(member => `<option value="${member.id}">${escapeHtml(member.name)} (${member.role || 'Staff'})</option>`).join('');
+                
+        } catch (error) {
+            console.error('Error loading staff:', error);
+            showToast('Failed to load staff', 'error');
+        }
+    }
+
+    async function loadTasks() {
+        try {
+            const response = await fetch('/get-tasks/');
+            const data = await response.json();
+            const tasks = data.tasks || [];
+            
+            const tasksList = document.getElementById('tasksList');
+            
+            if (!tasks || tasks.length === 0) {
+                tasksList.innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p>No tasks assigned yet</p>
+                    </div>
+                `;
+                document.getElementById('totalTasks').textContent = '0';
+                document.getElementById('sidebarTasksBadge').textContent = '0';
+                return;
+            }
+            
+            document.getElementById('totalTasks').textContent = tasks.length;
+            document.getElementById('sidebarTasksBadge').textContent = tasks.length;
+            
+            tasksList.innerHTML = tasks.map(task => `
+                <div class="task-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div style="flex: 1;">
+                            <div class="task-title"><strong>${escapeHtml(task.title)}</strong></div>
+                            <div class="task-description">${task.description ? escapeHtml(task.description) : 'No description'}</div>
+                            <div class="task-meta">
+                                <i class="fas fa-user"></i> ${escapeHtml(task.staff || 'Unknown')}
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="task-status status-${(task.status || 'pending').toLowerCase()}">
+                                ${escapeHtml(task.status || 'Pending')}
+                            </span>
+                            <br>
+                            <button class="btn btn-sm btn-outline-success mt-2" onclick="completeTask(${task.id})">
+                                <i class="fas fa-check"></i> Complete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+        } catch (error) {
+            console.error('Error loading tasks:', error);
+            showToast('Failed to load tasks', 'error');
+        }
+    }
+
+    document.getElementById('addDepartmentForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('deptName').value.trim();
+        if (!name) return showToast('Department name required', 'error');
+        
+        const formData = new FormData();
+        formData.append('name', name);
+        
+        try {
+            const response = await fetch('/add-department/', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': csrftoken }
+            });
+            if (response.ok) {
+                showToast('✅ Department added successfully!');
+                document.getElementById('deptName').value = '';
+                await loadDepartments();
+            } else {
+                showToast('Failed to add department', 'error');
+            }
+        } catch (error) {
+            showToast('Error adding department', 'error');
+        }
+    });
+
+    document.getElementById('addStaffForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData();
+        formData.append('name', document.getElementById('staffName').value.trim());
+        formData.append('email', document.getElementById('staffEmail').value.trim());
+        formData.append('phone', document.getElementById('staffPhone').value.trim());
+        formData.append('department', document.getElementById('staffDepartment').value);
+        formData.append('role', document.getElementById('staffRole').value);
+        formData.append('password', document.getElementById('staffPassword').value);
+        
+        if (!formData.get('name') || !formData.get('email') || !formData.get('department') || !formData.get('password')) {
+            return showToast('Please fill all required fields', 'error');
+        }
+        
+        try {
+            const response = await fetch('/add-staff/', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': csrftoken }
+            });
+            if (response.ok) {
+                showToast('✅ Staff member added successfully!');
+                document.getElementById('addStaffForm').reset();
+                await loadStaff();
+                await loadDepartments();
+            } else {
+                showToast('Failed to add staff', 'error');
+            }
+        } catch (error) {
+            showToast('Error adding staff member', 'error');
+        }
+    });
+
+    document.getElementById('assignTaskForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const staffId = document.getElementById('taskStaff').value;
+        const title = document.getElementById('taskTitle').value.trim();
+        const description = document.getElementById('taskDescription').value.trim();
+        
+        if (!staffId || !title) {
+            return showToast('Please select staff and enter task title', 'error');
+        }
+        
+        const formData = new FormData();
+        formData.append('staff', staffId);
+        formData.append('title', title);
+        formData.append('description', description);
+        
+        try {
+            const response = await fetch('/assign-task/', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': csrftoken }
+            });
+            if (response.ok) {
+                showToast('✅ Task assigned successfully!');
+                document.getElementById('assignTaskForm').reset();
+                await loadTasks();
+            } else {
+                showToast('Failed to assign task', 'error');
+            }
+        } catch (error) {
+            showToast('Error assigning task', 'error');
+        }
+    });
+
+    window.viewDepartmentStaff = function(deptId) {
+        const department = departmentsData.find(d => d.id === deptId);
+        const staffInDept = staffData.filter(s => s.department_id === deptId);
+        
+        if (staffInDept.length === 0) {
+            showToast(`${department?.name || 'Department'} has no staff members yet`, 'info');
+        } else {
+            const staffNames = staffInDept.map(s => s.name).join(', ');
+            showToast(`${department?.name || 'Department'} staff: ${staffNames}`, 'info');
+        }
+        switchToTab('staff');
+    };
+
+    window.viewStaffDetails = function(staffId) {
+        const staff = staffData.find(s => s.id === staffId);
+        if (staff) {
+            showToast(`Staff: ${staff.name}\nEmail: ${staff.email || 'Not provided'}\nRole: ${staff.role || 'Staff'}`, 'info');
+        }
+    };
+
+    window.deleteStaff = function(staffId) {
+        if (confirm('Are you sure you want to delete this staff member?')) {
+            showToast(`Staff member deletion - This feature requires backend implementation`, 'info');
+        }
+    };
+
+    window.completeTask = function(taskId) {
+        if (confirm('Mark this task as completed?')) {
+            showToast(`Task marked as completed!`, 'success');
+        }
+    };
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    async function init() {
+        await loadDepartments();
+        await loadStaff();
+        await loadTasks();
+    }
+    
+    init();
+    
+    setInterval(async () => {
+        await loadDepartments();
+        await loadStaff();
+        await loadTasks();
+    }, 30000);
+</script>
+</body>
+</html>

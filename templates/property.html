@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | {{ hotel.hotel_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 2rem;
+        }
+        .dashboard-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .dashboard-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+        }
+        .card-header h2 {
+            margin: 0;
+            font-weight: 700;
+        }
+        .card-header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+        }
+        .card-body {
+            padding: 30px;
+        }
+        .info-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .info-row {
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #667eea;
+            width: 130px;
+        }
+        .info-value {
+            color: #555;
+            flex: 1;
+        }
+        .amenity-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+            cursor: pointer;
+            width: 100%;
+            display: block;
+            text-decoration: none;
+        }
+        .amenity-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .amenity-card:hover i {
+            color: white;
+        }
+        .amenity-card:hover span {
+            color: white;
+        }
+        .amenity-card i {
+            font-size: 1.5rem;
+            color: #28a745;
+            margin-right: 8px;
+            transition: all 0.3s ease;
+        }
+        .amenity-card span {
+            font-weight: 500;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        .btn-back {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+            color: white;
+        }
+        .empty-amenities {
+            text-align: center;
+            padding: 40px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+        /* Additional styles for staff card */
+        .staff-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .staff-card i {
+            color: #764ba2;
+        }
+        .staff-card:hover i {
+            color: white;
+        }
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            .info-row { flex-direction: column; }
+            .info-label { width: 100%; margin-bottom: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <div class="dashboard-card">
+        <div class="card-header">
+            <h2><i class="fas fa-hotel"></i> {{ hotel.hotel_name }}</h2>
+            <p><i class="fas fa-map-marker-alt"></i> {{ hotel.city|default:"Prime Location" }} | <i class="fas fa-star"></i> Premium Partner</p>
+        </div>
+        
+        <div class="card-body">
+            <!-- Hotel Information -->
+            <div class="info-section">
+                <h4><i class="fas fa-info-circle"></i> Hotel Information</h4>
+                <div class="info-row">
+                    <div class="info-label"><i class="fas fa-user-tie"></i> Owner Name:</div>
+                    <div class="info-value">{{ hotel.owner_name }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label"><i class="fas fa-envelope"></i> Email:</div>
+                    <div class="info-value">{{ hotel.email }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label"><i class="fas fa-map-pin"></i> Address:</div>
+                    <div class="info-value">{{ hotel.address|default:"Not specified" }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label"><i class="fas fa-city"></i> City:</div>
+                    <div class="info-value">{{ hotel.city|default:"Not specified" }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label"><i class="fas fa-tag"></i> Property Type:</div>
+                    <div class="info-value">{{ hotel.property_type|default:"Not specified" }}</div>
+                </div>
+            </div>
+
+            <!-- Selected Amenities -->
+            <h4 class="mt-4 mb-3"><i class="fas fa-concierge-bell"></i> Selected Amenities</h4>
+            
+            {% if amenities %}
+                <div class="row">
+                    {% for amenity in amenities %}
+                        <div class="col-md-4 col-sm-6">
+                            {% if amenity.name|lower == "room" %}
+                                <button class="amenity-card" onclick="location.href='/rooms/'">
+                                    <i class="fas fa-bed"></i>
+                                    <span>{{ amenity.name }}</span>
+                                </button>
+                            {% elif amenity.name|lower == "staff" %}
+                                <button class="amenity-card staff-card" onclick="location.href='/staff/'">
+                                    <i class="fas fa-users"></i>
+                                    <span>{{ amenity.name }}</span>
+                                </button>
+                            {% else %}
+                                <button class="amenity-card" onclick="alert('{{ amenity.name }} feature coming soon!')">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>{{ amenity.name }}</span>
+                                </button>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <p class="text-muted mt-3">Total: {{ amenities|length }} amenities selected • Click "Room" to manage rooms • Click "Staff" to manage staff</p>
+            {% else %}
+                <div class="empty-amenities">
+                    <i class="fas fa-info-circle fa-3x mb-3 text-muted"></i>
+                    <p>No amenities selected yet.</p>
+                    <a href="{% url 'amenities_page' %}" class="btn-back">Add Amenities Now</a>
+                </div>
+            {% endif %}
+            
+            <!-- Action Buttons -->
+            <div class="mt-4 d-flex gap-3">
+                <a href="{% url 'amenities_page' %}" class="btn-back">
+                    <i class="fas fa-edit"></i> Manage Amenities
+                </a>
+                {% if amenities %}
+                    {% for amenity in amenities %}
+                        {% if amenity.name|lower == "staff" %}
+                            <a href="/staff/" class="btn-back" style="background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);">
+                                <i class="fas fa-users"></i> Go to Staff Management
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+</body>
+</html>
