@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect
-from .models import Hotel,Amenity,Room,Department,Staff,Task
+from .models import Hotel,Amenity,Room,Department,Staff,Task,Shift
 from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
 import json
 from django.views.decorators.csrf import csrf_exempt
-
+def index(request):
+    return render(request, "index.html")
 def hotel_register(request):
     approved = None
     error = None
@@ -165,16 +167,23 @@ def dashboard(request):
 
     hotel = Hotel.objects.get(id=hotel_id)
 
-    
+   
     amenities = hotel.properties.all()
+
+   
+    total_rooms = Room.objects.filter(hotel=hotel).count()
+
+    
+    total_staff = Staff.objects.filter(hotel=hotel).count()
 
     print(f"[DEBUG] {hotel.hotel_name} amenities: {[a.name for a in amenities]}")
 
     return render(request, "property.html", {
         "hotel": hotel,
-        "amenities": amenities
+        "amenities": amenities,
+        "total_rooms": total_rooms,  
+        "total_staff": total_staff    
     })
-
  ##----------------------ROOM MODULE----------------------
 def room_page(request):
     hotel_id = request.session.get('hotel_id')
@@ -320,7 +329,7 @@ def add_department(request):
     if request.method == "POST":
         name = request.POST.get("name")
 
-        # assuming logged-in hotel (you can change logic)
+       
         hotel = request.session.get("hotel_id")
 
         if hotel:
@@ -350,21 +359,70 @@ def get_staff(request):
         })
     
     return JsonResponse(staff_list, safe=False)
+
+@csrf_exempt
+@require_http_methods(["POST"])
 def add_staff(request):
-    if request.method == "POST":
+    """Add staff member and return JSON response for AJAX"""
+    try:
         hotel_id = request.session.get("hotel_id")
-
-        Staff.objects.create(
+        
+        # Debug: Print to console to check if hotel_id exists
+        print(f"Hotel ID from session: {hotel_id}")
+        
+        if not hotel_id:
+            return JsonResponse({
+                "error": "Hotel not found in session. Please login first."
+            }, status=400)
+        
+        # Get form data
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
+        department_id = request.POST.get("department")
+        role = request.POST.get("role")
+        password = request.POST.get("password")
+        
+        # Debug: Print received data
+        print(f"Adding staff - Name: {name}, Department: {department_id}, Role: {role}")
+        
+        # Validation
+        if not name:
+            return JsonResponse({"error": "Staff name is required"}, status=400)
+        if not department_id:
+            return JsonResponse({"error": "Department is required"}, status=400)
+        
+        # Create staff member
+        staff = Staff.objects.create(
             hotel_id=hotel_id,
-            name=request.POST.get("name"),
-            email=request.POST.get("email"),
-            phone=request.POST.get("phone"),
-            department_id=request.POST.get("department"),
-            role=request.POST.get("role"),
-            password=request.POST.get("password")
+            name=name,
+            email=email or "",
+            phone=phone or "",
+            department_id=department_id,
+            role=role or "Staff",
+            password=password or "default123"
         )
+        
+        # Debug: Print success
+        print(f"Staff created successfully with ID: {staff.id}")
+        
+        # Return JSON response with staff data
+        return JsonResponse({
+            "success": True,
+            "id": staff.id,
+            "name": staff.name,
+            "email": staff.email,
+            "phone": staff.phone,
+            "role": staff.role,
+            "department_id": staff.department_id,
+            "message": f"Staff '{name}' added successfully"
+        }, status=200)
+        
+    except Exception as e:
+        # Debug: Print error
+        print(f"Error adding staff: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)
 
-        return redirect("staff_page")
 def assign_task(request):
     if request.method == "POST":
         staff_id = request.POST.get("staff")
@@ -395,11 +453,8 @@ def get_departments(request):
     return JsonResponse(department_list, safe=False)
 def get_tasks(request):
     hotel_id = request.session.get("hotel_id")
-
-    tasks = Task.objects.filter(
-        staff__hotel_id=hotel_id
-    ).select_related("staff")
-
+    tasks = Task.objects.filter(staff__hotel_id=hotel_id).select_related("staff")
+    
     task_list = []
     for t in tasks:
         task_list.append({
@@ -407,10 +462,216 @@ def get_tasks(request):
             "title": t.title,
             "description": t.description,
             "staff": t.staff.name,
-            "status": t.status
+            "staff_id": t.staff.id,  # CRITICAL: Add this field
+            "status": t.status,
+            "created_at": t.created_at.strftime("%Y-%m-%d %H:%M:%S") if hasattr(t, 'created_at') else None
+        })
+    
+    return JsonResponse({"tasks": task_list, "count": tasks.count()})
+def get_shifts(request):
+    hotel_id = request.session.get("hotel_id")
+
+    shifts = Shift.objects.filter(hotel_id=hotel_id).select_related("staff", "department")
+
+    data = []
+    for s in shifts:
+        data.append({
+            "id": s.id,
+            "staff_id": s.staff.id,  # ADD THIS - critical for matching
+            "staff": s.staff.name,
+            "department": s.department.name,
+            "department_id": s.department.id,  # ADD THIS
+            "shift": s.shift,
+            "date": s.date.strftime("%Y-%m-%d") if s.date else None
         })
 
-    return JsonResponse({
-        "tasks": task_list,
-        "count": tasks.count()
+    return JsonResponse(data, safe=False)
+
+
+def assign_shift(request):
+    if request.method == "POST":
+        hotel_id = request.session.get("hotel_id")
+        staff_id = request.POST.get("staff")
+        department_id = request.POST.get("department")
+        shift_value = request.POST.get("shift")
+        
+        # Check if shift already exists for this staff
+        existing_shift = Shift.objects.filter(
+            hotel_id=hotel_id,
+            staff_id=staff_id
+        ).first()
+        
+        if existing_shift:
+            # Update existing shift
+            existing_shift.shift = shift_value
+            existing_shift.department_id = department_id
+            existing_shift.save()
+            return JsonResponse({"success": True, "message": "Shift updated"})
+        else:
+            # Create new shift
+            Shift.objects.create(
+                hotel_id=hotel_id,
+                staff_id=staff_id,
+                department_id=department_id,
+                shift=shift_value
+            )
+            return JsonResponse({"success": True, "message": "Shift assigned"})
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+def update_shift(request):
+    if request.method == "POST":
+        shift_id = request.POST.get("shift_id")
+        new_shift = request.POST.get("shift")
+        
+        try:
+            shift = Shift.objects.get(id=shift_id)
+            shift.shift = new_shift
+            shift.save()
+            return JsonResponse({"success": True})
+        except Shift.DoesNotExist:
+            return JsonResponse({"error": "Shift not found"}, status=404)
+    
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+def staff_by_shift(request):
+    hotel_id = request.session.get("hotel_id")
+    shift = request.GET.get("shift")
+
+    staff = Shift.objects.filter(
+        hotel_id=hotel_id,
+        shift=shift
+    ).select_related("staff")
+
+    data = [{
+        "name": s.staff.name,
+        "role": s.staff.role
+    } for s in staff]
+
+    return JsonResponse(data, safe=False)
+#----------------------STAFF MODULE----------------------
+def staff_login(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        selected_dept = request.POST.get("department").lower()
+
+        try:
+            staff = Staff.objects.get(email=email, password=password)
+
+            actual_dept = staff.department.name.lower()
+
+            
+            if selected_dept != actual_dept:
+                return render(request, "staff_login.html", {
+                    "error": "Department mismatch"
+                })
+
+            
+            request.session["staff_id"] = staff.id
+            request.session["department"] = actual_dept
+
+            
+            if actual_dept == "housekeeping":
+                return redirect("housekeeping_dashboard")
+
+            elif actual_dept == "hr":
+                return redirect("hr_dashboard")
+
+            elif actual_dept == "front desk":
+                return redirect("frontoffice_dashboard")
+
+            elif actual_dept == "accountant":
+                return redirect("accountant_dashboard")
+
+            else:
+                return redirect("staff_login")
+
+        except Staff.DoesNotExist:
+            return render(request, "staff_login.html", {
+                "error": "Invalid credentials"
+            })
+
+    return render(request, "staff_login.html")
+def housekeeping_dashboard(request):
+    staff_id = request.session.get("staff_id")
+
+    if not staff_id:
+        return redirect("staff_login")
+
+    staff = Staff.objects.select_related("hotel").get(id=staff_id)
+    tasks=Task.objects.filter(staff_id=staff_id)
+    shift=Shift.objects.filter(staff_id=staff_id).select_related("department").first()
+
+
+    return render(request, "housekeeping.html", {
+        "staff": staff,
+        "hotel": staff.hotel,
+        "tasks": tasks,      
+        "shift": shift 
     })
+
+def hr_dashboard(request):
+    staff_id = request.session.get("staff_id")
+
+    if not staff_id:
+        return redirect("staff_login")
+
+    staff = Staff.objects.select_related("hotel").get(id=staff_id)
+    hotel = staff.hotel
+
+    employees = Staff.objects.filter(hotel=hotel).select_related("department")
+
+    total_staff = employees.count()
+    total_departments = Department.objects.filter(hotel=hotel).count()
+
+    tasks = Task.objects.filter(staff__hotel=hotel)
+    shifts = Shift.objects.filter(hotel=hotel).select_related("staff", "department")
+
+   
+    payroll_data = []
+    for emp in employees:
+        salary = getattr(emp, "salary", 0)
+        bonus = getattr(emp, "bonus", 0)
+        deduction = getattr(emp, "deduction", 0)
+
+        payroll_data.append({
+            "name": emp.name,
+            "role": emp.role,
+            "salary": salary,
+            "bonus": bonus,
+            "deduction": deduction,
+            "net": salary + bonus - deduction
+        })
+
+    return render(request, "hr.html", {
+        "staff": staff,
+        "hotel": hotel,
+        "employees": employees,
+        "total_staff": total_staff,
+        "total_departments": total_departments,
+        "tasks": tasks,
+        "shifts": shifts,
+        "payroll": payroll_data
+    })
+def frontoffice_dashboard(request):
+    staff_id = request.session.get("staff_id")
+    if not staff_id:
+        return redirect("staff_login")
+
+    staff = Staff.objects.select_related("hotel").get(id=staff_id)
+    
+    
+    rooms = Room.objects.filter(hotel=staff.hotel)
+    
+    
+
+    return render(request, "frontoffice.html", {
+        "rooms": rooms,
+        "staff": staff,
+        "hotel": staff.hotel,
+        
+    })
+def accountant_dashboard(request):
+    return render(request, "accountant.html")
+

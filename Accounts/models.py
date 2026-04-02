@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 class Hotel(models.Model):
     
     hotel_name = models.CharField(max_length=100,unique=True)
@@ -52,8 +53,8 @@ class Department(models.Model):
 
 class Staff(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name="staffs")
-    name = models.CharField(max_length=100)
-    email = models.EmailField()
+    name = models.CharField(max_length=100,unique=True)
+    email = models.EmailField(unique=True)
     phone = models.CharField(max_length=15)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
     role = models.CharField(max_length=100)
@@ -65,8 +66,25 @@ class Task(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="tasks")
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
-    assigned_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=50, default="Pending")
 
+    created_at = models.DateTimeField(default=timezone.now)  # ✅ FIX
+
+    status = models.CharField(max_length=50, default="Pending")
     def __str__(self):
         return f"{self.title} - {self.staff.name}"
+class Shift(models.Model):
+    SHIFT_CHOICES = [
+        ("Morning", "Morning"),
+        ("Evening", "Evening"),
+        ("Night", "Night"),
+    ]
+
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
+
+    shift = models.CharField(max_length=20, choices=SHIFT_CHOICES)
+    date = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.staff.name} - {self.shift}"

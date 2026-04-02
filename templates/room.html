@@ -3,201 +3,258 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Room Management | Hotel Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>Room Management | {{ hotel.hotel_name }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
 <style>
 :root {
-  --bg:       #f0f4f8;
-  --surface:  #ffffff;
-  --card:     #f8f9fc;
-  --border:   #e2e8f0;
-  --accent:   #667eea;
-  --accent2:  #764ba2;
-  --accent-lt: #eef2ff;
-  --gold:     #b07d2e;
-  --red:      #c0392b;
-  --red-lt:   #fef2f2;
-  --text:     #1a1f2e;
-  --muted:    #6b7280;
-  --radius:   13px;
-  --shadow:   0 2px 16px rgba(102,126,234,0.08);
-  --sidebar-width: 280px;
-  --primary: #667eea;
-  --secondary: #764ba2;
+  --navy: #0f1f3d;
+  --blue: #1a56db;
+  --blue-light: #3b82f6;
+  --accent: #f59e0b;
+  --green: #10b981;
+  --red: #ef4444;
+  --purple: #7c3aed;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  --sidebar-w: 280px;
+  --radius: 12px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: var(--text);
   min-height: 100vh;
 }
 
-/* Sidebar Styles */
+/* Sidebar Styles - Matching Dashboard Design */
 .sidebar {
   position: fixed;
   left: 0;
   top: 0;
-  width: var(--sidebar-width);
+  width: var(--sidebar-w);
   height: 100vh;
-  background: white;
-  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+  background: var(--navy);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
   overflow-y: auto;
-  z-index: 1000;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
 }
 
-.sidebar-header {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  padding: 25px 20px;
-  text-align: center;
-  color: white;
+.sidebar-brand {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
-.sidebar-header h3 {
-  margin: 0;
-  font-size: 1.3rem;
-  font-weight: 700;
-  font-family: 'Fraunces', serif;
-}
-
-.sidebar-header p {
-  margin: 10px 0 0;
-  font-size: 0.8rem;
-  opacity: 0.9;
-}
-
-.sidebar-menu {
-  padding: 20px 0;
-}
-
-.menu-item {
-  padding: 12px 25px;
-  margin: 5px 15px;
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  cursor: pointer;
+.brand-logo {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #666;
+}
+
+.brand-icon {
+  width: 42px;
+  height: 42px;
+  background: var(--blue);
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: white;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.brand-name {
+  font-size: 1rem;
+  font-weight: 800;
+  color: white;
+  line-height: 1.2;
+}
+
+.brand-sub {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.45);
   font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 12px;
+}
+
+.nav-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  padding: 12px 10px 6px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  margin: 4px 0;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  color: rgba(255,255,255,0.7);
+  font-weight: 500;
+  font-size: 0.85rem;
   text-decoration: none;
 }
 
 .menu-item i {
   width: 24px;
-  font-size: 1.2rem;
+  font-size: 1rem;
+  color: var(--blue-light);
 }
 
 .menu-item:hover {
-  background: rgba(102,126,234,0.1);
-  color: var(--primary);
-  transform: translateX(5px);
+  background: rgba(255,255,255,0.08);
+  color: white;
+  transform: translateX(3px);
+}
+
+.menu-item:hover i {
+  color: white;
 }
 
 .menu-item.active {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);
   color: white;
-  box-shadow: 0 5px 15px rgba(102,126,234,0.3);
+}
+
+.menu-item.active i {
+  color: white;
+}
+
+.sidebar-footer {
+  padding: 16px 12px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.3);
+  text-align: center;
 }
 
 /* Main Content */
 .main-content {
-  margin-left: var(--sidebar-width);
+  margin-left: var(--sidebar-w);
   min-height: 100vh;
+  transition: margin-left 0.3s ease;
 }
 
 /* Topbar */
 .topbar {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px 36px;
+  padding: 20px 28px;
+  border-radius: 0 0 20px 20px;
+  margin-bottom: 28px;
   display: flex;
   align-items: center;
   gap: 14px;
-  box-shadow: 0 4px 18px rgba(102,126,234,0.28);
+  flex-wrap: wrap;
+  box-shadow: 0 8px 20px rgba(102,126,234,0.25);
 }
 
 .topbar-icon {
-  width: 44px; height: 44px;
+  width: 48px;
+  height: 48px;
   background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.22);
-  border-radius: 11px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
 }
 
 .topbar-text h1 {
-  font-family: 'Fraunces', serif;
-  font-size: 21px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.5rem;
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
+  margin: 0;
 }
 
 .topbar-text p {
-  font-size: 12px;
-  color: rgba(255,255,255,0.6);
-  margin-top: 2px;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.7);
+  margin: 4px 0 0;
 }
 
 .hotel-name-pill {
   margin-left: auto;
-  background: rgba(255,255,255,0.13);
-  border: 1px solid rgba(255,255,255,0.22);
-  border-radius: 100px;
-  padding: 7px 18px;
-  font-size: 13px;
-  font-weight: 600;
+  background: rgba(255,255,255,0.15);
+  border-radius: 40px;
+  padding: 8px 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
   color: #fff;
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
 }
 
-.hotel-name-pill span { opacity: 0.65; font-weight: 400; }
-
-/* Wrap */
+/* Wrap Container */
 .wrap {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 28px 22px;
+  padding: 0 28px 28px 28px;
 }
 
 /* Tabs */
 .tabs {
   display: flex;
   gap: 8px;
-  margin-bottom: 24px;
-  background: var(--surface);
+  margin-bottom: 28px;
+  background: white;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 6px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-sm);
   width: fit-content;
 }
 
 .tab {
-  padding: 9px 28px;
+  padding: 10px 28px;
   border-radius: 9px;
-  font-size: 13px;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: var(--muted);
+  color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s;
   user-select: none;
   border: none;
   background: transparent;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-.tab:hover { color: var(--accent); background: var(--accent-lt); }
+.tab:hover { 
+  color: var(--blue); 
+  background: rgba(102,126,234,0.1);
+}
+
 .tab.active {
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff;
   box-shadow: 0 3px 12px rgba(102,126,234,0.3);
 }
@@ -208,95 +265,111 @@ body {
 
 /* Form Panel */
 .form-panel {
-  background: var(--surface);
+  background: white;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  max-width: 520px;
+  box-shadow: var(--shadow-sm);
+  max-width: 560px;
   overflow: hidden;
 }
 
 .form-panel-head {
-  padding: 18px 22px;
+  padding: 20px 24px;
   border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface-2);
 }
 
 .fph-dot {
-  width: 9px; height: 9px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  background: var(--accent);
+  background: linear-gradient(135deg, #667eea, #764ba2);
   box-shadow: 0 0 6px rgba(102,126,234,0.5);
 }
 
 .form-panel-head h3 {
-  font-family: 'Fraunces', serif;
-  font-size: 17px; font-weight: 600; color: var(--text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
 }
 
-.form-panel-body { padding: 22px; }
+.form-panel-body { 
+  padding: 24px; 
+}
 
-.field { margin-bottom: 14px; }
+.field { 
+  margin-bottom: 20px; 
+}
 
 .field label {
   display: block;
-  font-size: 10.5px;
+  font-size: 0.7rem;
   font-weight: 700;
-  color: var(--muted);
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.9px;
-  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
 }
 
 .field input,
 .field select,
 .field textarea {
   width: 100%;
-  background: var(--card);
+  background: var(--surface-2);
   border: 1.5px solid var(--border);
-  border-radius: 9px;
+  border-radius: 10px;
   color: var(--text);
-  font-family: 'Manrope', sans-serif;
-  font-size: 14px;
-  padding: 10px 13px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.85rem;
+  padding: 10px 14px;
   outline: none;
-  transition: border-color 0.18s, box-shadow 0.18s;
+  transition: all 0.2s;
 }
 
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
-  border-color: var(--accent2);
+  border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
-  background: #fff;
+  background: white;
 }
 
-.field textarea { resize: vertical; min-height: 78px; }
+.field textarea { 
+  resize: vertical; 
+  min-height: 80px;
+}
 
 .btn-add {
   width: 100%;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  color: #fff;
-  font-family: 'Manrope', sans-serif;
-  font-size: 14px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.85rem;
   font-weight: 700;
   padding: 12px;
   border: none;
-  border-radius: 9px;
+  border-radius: 10px;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(102,126,234,0.28);
-  transition: opacity 0.2s, transform 0.15s;
-  margin-top: 2px;
+  transition: all 0.2s;
+  margin-top: 8px;
 }
 
-.btn-add:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-add:hover { 
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102,126,234,0.4);
+}
 
 #msg {
   margin-top: 12px;
-  font-size: 13px;
+  font-size: 0.8rem;
   font-weight: 500;
   text-align: center;
-  min-height: 18px;
+  min-height: 24px;
 }
 
 /* View Header */
@@ -304,15 +377,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
 }
 
 .view-title {
-  font-family: 'Fraunces', serif;
-  font-size: 20px;
-  font-weight: 600;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--text);
 }
 
@@ -324,103 +397,116 @@ body {
 }
 
 .filter-lbl {
-  font-size: 11px;
+  font-size: 0.7rem;
   font-weight: 700;
-  color: var(--muted);
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.7px;
+  letter-spacing: 0.5px;
 }
 
 .filter-chip {
-  background: var(--surface);
+  background: white;
   border: 1.5px solid var(--border);
-  color: var(--muted);
-  font-family: 'Manrope', sans-serif;
-  font-size: 12px;
+  color: var(--text-muted);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.75rem;
   font-weight: 600;
-  padding: 5px 14px;
+  padding: 6px 16px;
   border-radius: 100px;
   cursor: pointer;
-  transition: all 0.17s;
+  transition: all 0.2s;
 }
 
-.filter-chip:hover { border-color: var(--accent2); color: var(--accent); }
+.filter-chip:hover { 
+  border-color: #667eea; 
+  color: #667eea; 
+}
+
 .filter-chip.active {
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  border-color: var(--accent);
-  color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: transparent;
+  color: white;
 }
 
 /* Room Type Section */
 .room-type-section {
-  background: var(--surface);
-  border: 1.5px solid var(--border);
+  background: white;
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
   margin-bottom: 20px;
-  box-shadow: var(--shadow);
-  animation: tileIn 0.32s ease both;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
 }
 
-@keyframes tileIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+.room-type-section:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
 }
 
 .rtype-header {
-  padding: 14px 20px;
-  background: var(--accent-lt);
-  border-bottom: 1.5px solid #e2e8f0;
+  padding: 18px 24px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
 .rtype-name {
-  font-family: 'Fraunces', serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--accent);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #667eea;
 }
 
 .rtype-price {
-  font-family: 'Fraunces', serif;
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--gold);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #b07d2e;
 }
 
 .rtype-price small {
-  font-family: 'Manrope', sans-serif;
-  font-size: 11px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.7rem;
   font-weight: 400;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .rtype-meta {
   margin-left: auto;
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
 }
 
 .rtype-badge {
-  font-size: 11px;
+  font-size: 0.7rem;
   font-weight: 700;
-  padding: 4px 12px;
+  padding: 5px 14px;
   border-radius: 100px;
   letter-spacing: 0.3px;
 }
 
-.rtype-badge.avail { background: #dcfce7; color: #15803d; border: 1px solid #a7f3d0; }
-.rtype-badge.full  { background: #fee2e2; color: var(--red); border: 1px solid #fca5a5; }
+.rtype-badge.avail { 
+  background: #dcfce7; 
+  color: #15803d; 
+  border: 1px solid #a7f3d0; 
+}
+
+.rtype-badge.full { 
+  background: #fee2e2; 
+  color: #dc2626; 
+  border: 1px solid #fecaca; 
+}
 
 /* Legend */
 .legend {
   display: flex;
-  gap: 14px;
-  padding: 10px 20px;
+  gap: 20px;
+  padding: 12px 24px;
   border-bottom: 1px solid var(--border);
   background: #fafcfa;
   flex-wrap: wrap;
@@ -429,91 +515,95 @@ body {
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: var(--muted);
+  gap: 8px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
   font-weight: 600;
 }
 
 .legend-box {
-  width: 14px; height: 14px;
+  width: 14px;
+  height: 14px;
   border-radius: 4px;
 }
 
-.legend-box.green { background: #22c55e; }
+.legend-box.green { background: #10b981; }
 .legend-box.red   { background: #ef4444; }
 
 /* Room Boxes Grid */
 .room-boxes {
-  padding: 16px 20px;
+  padding: 20px 24px;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 .room-box {
-  width: 56px;
-  height: 56px;
-  border-radius: 10px;
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-family: 'Manrope', sans-serif;
-  cursor: default;
-  transition: transform 0.15s, box-shadow 0.15s;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: all 0.2s;
   position: relative;
-  border: 2px solid transparent;
+  cursor: pointer;
   animation: boxIn 0.25s ease both;
 }
 
 .room-box:hover {
-  transform: scale(1.12);
-  z-index: 2;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  transform: scale(1.08);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
 }
 
 @keyframes boxIn {
-  from { opacity: 0; transform: scale(0.7); }
+  from { opacity: 0; transform: scale(0.8); }
   to   { opacity: 1; transform: scale(1); }
 }
 
 .room-box.available {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  border-color: #15803d;
-  box-shadow: 0 2px 8px rgba(34,197,94,0.3);
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 2px 8px rgba(16,185,129,0.3);
 }
 
 .room-box.occupied {
-  background: linear-gradient(135deg, #f87171, #dc2626);
-  border-color: #b91c1c;
-  box-shadow: 0 2px 8px rgba(220,38,38,0.25);
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 2px 8px rgba(239,68,68,0.3);
 }
 
 .room-box .box-icon {
-  font-size: 14px;
+  font-size: 1.1rem;
   line-height: 1;
 }
 
 .room-box .box-num {
-  font-size: 10px;
+  font-size: 0.7rem;
   font-weight: 700;
   color: rgba(255,255,255,0.95);
-  margin-top: 3px;
+  margin-top: 4px;
   line-height: 1;
 }
 
 .empty-state {
   text-align: center;
-  padding: 64px 20px;
-  color: var(--muted);
-  background: var(--surface);
-  border: 1.5px solid var(--border);
+  padding: 80px 20px;
+  color: var(--text-muted);
+  background: white;
+  border: 1px solid var(--border);
   border-radius: var(--radius);
 }
 
-.empty-state .ei { font-size: 42px; opacity: 0.3; margin-bottom: 12px; }
-.empty-state p { font-size: 14px; }
+.empty-state .ei { 
+  font-size: 3rem; 
+  opacity: 0.3; 
+  margin-bottom: 16px; 
+}
+
+.empty-state p { 
+  font-size: 0.85rem; 
+}
 
 /* Menu Toggle for Mobile */
 .menu-toggle {
@@ -522,12 +612,15 @@ body {
   top: 20px;
   left: 20px;
   z-index: 1100;
-  background: white;
+  background: var(--navy);
+  color: white;
   border: none;
   border-radius: 10px;
-  padding: 10px;
+  width: 44px;
+  height: 44px;
   cursor: pointer;
   box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  font-size: 1.2rem;
 }
 
 @media (max-width: 768px) {
@@ -541,30 +634,43 @@ body {
     margin-left: 0;
   }
   .menu-toggle {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .topbar {
     padding: 15px 20px;
   }
   .wrap {
-    padding: 20px 15px;
+    padding: 0 15px 20px 15px;
+  }
+  .room-box {
+    width: 50px;
+    height: 50px;
   }
 }
 </style>
 </head>
 <body>
 
-<button class="menu-toggle" onclick="toggleSidebar()">
+<button class="menu-toggle" id="menuToggleBtn">
   <i class="fas fa-bars"></i>
 </button>
 
-<!-- Sidebar Navigation -->
+<!-- Sidebar Navigation - Matching Dashboard Design -->
 <div class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <h3><i class="fas fa-hotel"></i> Hotel Staff</h3>
-    <p>Management System</p>
+  <div class="sidebar-brand">
+    <div class="brand-logo">
+      <div class="brand-icon"><i class="fas fa-hotel"></i></div>
+      <div>
+        <div class="brand-name" id="sidebarHotelName">Hotel Name</div>
+        <div class="brand-sub">Room Management</div>
+      </div>
+    </div>
   </div>
-  <div class="sidebar-menu">
+  
+  <nav class="sidebar-nav">
+    <div class="nav-label">MAIN NAVIGATION</div>
     <a href="/staff/" class="menu-item">
       <i class="fas fa-users"></i>
       <span>Staff Management</span>
@@ -573,6 +679,19 @@ body {
       <i class="fas fa-bed"></i>
       <span>Room Management</span>
     </a>
+    <div class="nav-label" style="margin-top: 16px;">QUICK LINKS</div>
+    <a href="{% url 'dashboard' %}" class="menu-item">
+      <i class="fas fa-chart-line"></i>
+      <span>Dashboard</span>
+    </a>
+    <a href="{% url 'amenities_page' %}" class="menu-item">
+      <i class="fas fa-concierge-bell"></i>
+      <span>Amenities</span>
+    </a>
+  </nav>
+  
+  <div class="sidebar-footer">
+    <i class="fas fa-building me-1"></i> Hotel ERP System
   </div>
 </div>
 
@@ -583,10 +702,10 @@ body {
     <div class="topbar-icon">🏨</div>
     <div class="topbar-text">
       <h1>Room Management</h1>
-      <p>Manage your hotel rooms and availability</p>
+      <p>Manage your hotel rooms, types, and availability</p>
     </div>
     <div class="hotel-name-pill">
-      🏷 <span>Hotel:</span> <strong id="hotelNameDisplay">Loading...</strong>
+      <i class="fas fa-hotel"></i> <strong id="hotelNameDisplay">Loading...</strong>
     </div>
   </div>
 
@@ -594,59 +713,61 @@ body {
 
     <!-- TABS -->
     <div class="tabs">
-      <div class="tab active" onclick="showTab('add', event)">Add Room</div>
-      <div class="tab" onclick="showTab('view', event)">View Rooms</div>
+      <div class="tab active" onclick="showTab('add', this)">➕ Add Room Type</div>
+      <div class="tab" onclick="showTab('view', this)">📋 View All Rooms</div>
     </div>
 
-    <!-- ADD ROOM -->
+    <!-- ADD ROOM SECTION -->
     <div id="add" class="section active">
       <div class="form-panel">
         <div class="form-panel-head">
           <div class="fph-dot"></div>
-          <h3>Add New Room</h3>
+          <h3><i class="fas fa-plus-circle me-2"></i> Add New Room Type</h3>
         </div>
         <div class="form-panel-body">
-
           <div class="field">
-            <label>Room Type</label>
+            <label><i class="fas fa-tag me-1"></i> Room Type *</label>
             <select id="room_type">
               <option value="">Select Room Type</option>
               <option value="Single">Single</option>
               <option value="Double">Double</option>
               <option value="Deluxe">Deluxe</option>
               <option value="Suite">Suite</option>
+              <option value="Presidential">Presidential Suite</option>
             </select>
           </div>
 
           <div class="field">
-            <label>Price per Night (₹)</label>
-            <input type="number" id="price" placeholder="e.g. 2500">
+            <label><i class="fas fa-rupee-sign me-1"></i> Price per Night (₹) *</label>
+            <input type="number" id="price" placeholder="e.g. 2500" step="100">
           </div>
 
           <div class="field">
-            <label>Total Rooms</label>
-            <input type="number" id="total_rooms" placeholder="e.g. 10">
+            <label><i class="fas fa-layer-group me-1"></i> Total Rooms *</label>
+            <input type="number" id="total_rooms" placeholder="e.g. 10" min="1">
           </div>
 
           <div class="field">
-            <label>Description</label>
-            <textarea id="description" placeholder="Describe amenities, view, etc."></textarea>
+            <label><i class="fas fa-align-left me-1"></i> Description</label>
+            <textarea id="description" placeholder="Describe amenities, view, special features..."></textarea>
           </div>
 
-          <button class="btn-add" onclick="addRoom()">+ Add Room</button>
-          <p id="msg"></p>
-
+          <button class="btn-add" onclick="addRoom()">
+            <i class="fas fa-save me-2"></i> Add Room Type
+          </button>
+          <div id="msg"></div>
         </div>
       </div>
     </div>
 
-    <!-- VIEW ROOMS -->
+    <!-- VIEW ROOMS SECTION -->
     <div id="view" class="section">
-
       <div class="view-header">
-        <div class="view-title">All Rooms</div>
+        <div class="view-title">
+          <i class="fas fa-bed me-2"></i> Room Inventory
+        </div>
         <div class="filter-row">
-          <span class="filter-lbl">Filter</span>
+          <span class="filter-lbl"><i class="fas fa-filter me-1"></i> Filter by Type</span>
           <button class="filter-chip active" onclick="setFilter(this, '')">All</button>
           <button class="filter-chip" onclick="setFilter(this, 'Single')">Single</button>
           <button class="filter-chip" onclick="setFilter(this, 'Double')">Double</button>
@@ -655,55 +776,88 @@ body {
         </div>
       </div>
 
-      <select id="filter" style="display:none" onchange="loadRooms()">
-        <option value="">All</option>
-        <option value="Single">Single</option>
-        <option value="Double">Double</option>
-        <option value="Deluxe">Deluxe</option>
-        <option value="Suite">Suite</option>
-      </select>
-
       <div id="roomList"></div>
-
     </div>
 
   </div>
 </div>
 
 <script>
+// Toggle sidebar for mobile
+const menuToggleBtn = document.getElementById('menuToggleBtn');
+const sidebar = document.getElementById('sidebar');
 
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-}
-
-// FETCH HOTEL NAME ON LOAD
-fetch("/get-room/?type=")
-  .then(res => res.json())
-  .then(data => {
-    if (data.hotel_name) {
-      document.getElementById("hotelNameDisplay").textContent = data.hotel_name;
+if (menuToggleBtn && sidebar) {
+  menuToggleBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    sidebar.classList.toggle('open');
+  });
+  
+  // Close sidebar when clicking outside on mobile
+  document.addEventListener('click', function(e) {
+    if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+      if (!sidebar.contains(e.target) && e.target !== menuToggleBtn && !menuToggleBtn.contains(e.target)) {
+        sidebar.classList.remove('open');
+      }
     }
   });
+}
 
-// FILTER CHIPS
+// Fetch hotel name
+function fetchHotelName() {
+  fetch("/get-room/?type=")
+    .then(res => res.json())
+    .then(data => {
+      if (data.hotel_name) {
+        document.getElementById("hotelNameDisplay").textContent = data.hotel_name;
+        document.getElementById("sidebarHotelName").textContent = data.hotel_name;
+      }
+    })
+    .catch(err => console.log('Hotel name fetch failed:', err));
+}
+
+// Filter chips
+let currentFilter = '';
+
 function setFilter(el, val) {
+  currentFilter = val;
   document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('filter').value = val;
   loadRooms();
 }
 
-// TAB SWITCH
-function showTab(tab, e) {
+// Tab switching
+function showTab(tab, element) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById(tab).classList.add('active');
-  e.target.classList.add('active');
-  if (tab === 'view') loadRooms();
+  element.classList.add('active');
+  
+  if (tab === 'view') {
+    loadRooms();
+  }
 }
 
-// ADD ROOM
+// Add room
 function addRoom() {
+  const roomType = document.getElementById("room_type").value;
+  const price = document.getElementById("price").value;
+  const totalRooms = document.getElementById("total_rooms").value;
+  const description = document.getElementById("description").value;
+  
+  if (!roomType) {
+    showMessage("Please select a room type", "error");
+    return;
+  }
+  if (!price || price <= 0) {
+    showMessage("Please enter a valid price", "error");
+    return;
+  }
+  if (!totalRooms || totalRooms <= 0) {
+    showMessage("Please enter a valid number of rooms", "error");
+    return;
+  }
+  
   fetch("/add-room/", {
     method: "POST",
     headers: {
@@ -711,120 +865,173 @@ function addRoom() {
       "X-CSRFToken": getCookie("csrftoken")
     },
     body: JSON.stringify({
-      room_type: document.getElementById("room_type").value,
-      price: document.getElementById("price").value,
-      total_rooms: document.getElementById("total_rooms").value,
-      description: document.getElementById("description").value
+      room_type: roomType,
+      price: price,
+      total_rooms: totalRooms,
+      description: description
     })
   })
   .then(res => res.json())
   .then(data => {
-    document.getElementById("msg").innerHTML =
-      data.success ? "✅ Room Added!" : "❌ " + data.error;
-    loadRooms();
+    if (data.success) {
+      showMessage("✅ Room type added successfully!", "success");
+      document.getElementById("room_type").value = "";
+      document.getElementById("price").value = "";
+      document.getElementById("total_rooms").value = "";
+      document.getElementById("description").value = "";
+      loadRooms();
+    } else {
+      showMessage("❌ " + (data.error || "Failed to add room"), "error");
+    }
+  })
+  .catch(err => {
+    console.error('Error:', err);
+    showMessage("❌ Network error. Please try again.", "error");
   });
 }
 
-// LOAD ROOMS
+function showMessage(msg, type) {
+  const msgDiv = document.getElementById("msg");
+  msgDiv.innerHTML = msg;
+  msgDiv.style.color = type === "error" ? "#dc2626" : "#10b981";
+  setTimeout(() => {
+    msgDiv.innerHTML = "";
+  }, 3000);
+}
+
+// Load rooms
 function loadRooms() {
-  let type = document.getElementById("filter").value;
-
-  fetch("/get-room/?type=" + type)
-  .then(res => res.json())
-  .then(data => {
-    const container = document.getElementById("roomList");
-
-    if (data.hotel_name) {
-      document.getElementById("hotelNameDisplay").textContent = data.hotel_name;
-    }
-
-    if (!data.rooms || data.rooms.length === 0) {
+  const container = document.getElementById("roomList");
+  container.innerHTML = '<div style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin"></i> Loading rooms...</div>';
+  
+  fetch("/get-room/?type=" + encodeURIComponent(currentFilter))
+    .then(res => res.json())
+    .then(data => {
+      if (data.hotel_name) {
+        document.getElementById("hotelNameDisplay").textContent = data.hotel_name;
+        document.getElementById("sidebarHotelName").textContent = data.hotel_name;
+      }
+      
+      if (!data.rooms || data.rooms.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="ei">🛏️</div>
+            <p>No rooms found. ${currentFilter ? `No ${currentFilter} rooms available.` : 'Add a room type to get started.'}</p>
+          </div>`;
+        return;
+      }
+      
+      let html = "";
+      
+      data.rooms.forEach((room, idx) => {
+        const total = parseInt(room.total_rooms) || 0;
+        const available = (room.available_rooms !== undefined) ? parseInt(room.available_rooms) : total;
+        const occupied = total - available;
+        const allFull = available === 0;
+        
+        let boxesHtml = "";
+        for (let n = 1; n <= Math.min(total, 50); n++) { // Limit display to 50 rooms per type
+          const isOccupied = n > available;
+          boxesHtml += `
+            <div class="room-box ${isOccupied ? 'occupied' : 'available'}"
+                 style="animation-delay:${(n % 20) * 15}ms"
+                 title="Room ${n} — ${isOccupied ? 'Occupied' : 'Available'}">
+              <div class="box-icon">${isOccupied ? '🔴' : '🟢'}</div>
+              <div class="box-num">${n}</div>
+            </div>`;
+        }
+        
+        if (total > 50) {
+          boxesHtml += `<div style="padding: 10px; text-align: center; width: 100%; color: var(--text-muted); font-size: 0.75rem;">
+            +${total - 50} more rooms
+          </div>`;
+        }
+        
+        html += `
+        <div class="room-type-section" style="animation: tileIn 0.3s ease both; animation-delay:${idx * 50}ms">
+          <div class="rtype-header">
+            <div class="rtype-name">${escapeHtml(room.room_type)}</div>
+            <div class="rtype-price">
+              ₹${parseInt(room.price).toLocaleString('en-IN')}<small>/night</small>
+            </div>
+            <div class="rtype-meta">
+              <span class="rtype-badge ${allFull ? 'full' : 'avail'}">
+                ${allFull ? '🔴 Fully Booked' : `🟢 ${available} Available`}
+              </span>
+              <span style="font-size:0.7rem;color:var(--text-muted);font-weight:600;">
+                ${occupied}/${total} Occupied
+              </span>
+            </div>
+          </div>
+          
+          <div class="legend">
+            <div class="legend-item">
+              <div class="legend-box green"></div> Available
+            </div>
+            <div class="legend-item">
+              <div class="legend-box red"></div> Occupied
+            </div>
+            ${room.description ? `
+            <div class="legend-item" style="margin-left:auto;font-style:italic;font-weight:400;">
+              <i class="fas fa-info-circle"></i> ${escapeHtml(room.description.substring(0, 80))}${room.description.length > 80 ? '...' : ''}
+            </div>` : ''}
+          </div>
+          
+          <div class="room-boxes">
+            ${boxesHtml}
+          </div>
+        </div>`;
+      });
+      
+      container.innerHTML = html;
+    })
+    .catch(err => {
+      console.error('Error loading rooms:', err);
       container.innerHTML = `
         <div class="empty-state">
-          <div class="ei">🛏</div>
-          <p>No rooms found. Add one to get started.</p>
+          <div class="ei">⚠️</div>
+          <p>Error loading rooms. Please refresh the page.</p>
         </div>`;
-      return;
-    }
-
-    let html = "";
-
-    data.rooms.forEach((room, i) => {
-      const total = parseInt(room.total_rooms) || 0;
-      const available = (room.available_rooms !== undefined) ? parseInt(room.available_rooms) : total;
-      const occupied = total - available;
-      const allFull = available === 0;
-
-      let boxesHtml = "";
-      for (let n = 1; n <= total; n++) {
-        const isOccupied = n > available;
-        boxesHtml += `
-          <div class="room-box ${isOccupied ? 'occupied' : 'available'}"
-               style="animation-delay:${n * 25}ms"
-               title="Room ${n} — ${isOccupied ? 'Occupied' : 'Available'}">
-            <div class="box-icon">${isOccupied ? '🔴' : '🟢'}</div>
-            <div class="box-num">${n}</div>
-          </div>`;
-      }
-
-      html += `
-      <div class="room-type-section" style="animation-delay:${i * 80}ms">
-
-        <div class="rtype-header">
-          <div class="rtype-name">${room.room_type}</div>
-          <div class="rtype-price">
-            ₹${parseInt(room.price).toLocaleString('en-IN')}<small>/night</small>
-          </div>
-          <div class="rtype-meta">
-            <span class="rtype-badge ${allFull ? 'full' : 'avail'}">
-              ${allFull ? '🔴 Full' : `🟢 ${available} Available`}
-            </span>
-            <span style="font-size:12px;color:var(--muted);font-weight:600;">
-              ${occupied}/${total} Occupied
-            </span>
-          </div>
-        </div>
-
-        <div class="legend">
-          <div class="legend-item">
-            <div class="legend-box green"></div> Available
-          </div>
-          <div class="legend-item">
-            <div class="legend-box red"></div> Occupied
-          </div>
-          ${room.description
-            ? `<div class="legend-item" style="margin-left:auto;font-style:italic;font-weight:400;">
-                ${room.description}
-               </div>`
-            : ''}
-        </div>
-
-        <div class="room-boxes">
-          ${boxesHtml}
-        </div>
-
-      </div>`;
     });
-
-    container.innerHTML = html;
-  });
 }
 
-// CSRF
+// CSRF token helper
 function getCookie(name) {
   let cookieValue = null;
-  document.cookie.split(';').forEach(cookie => {
-    cookie = cookie.trim();
-    if (cookie.startsWith(name + '=')) {
-      cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
     }
-  });
+  }
   return cookieValue;
 }
 
-// INIT
-loadRooms();
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
 
+// Animation keyframes
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes tileIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+`;
+document.head.appendChild(style);
+
+// Initialize
+fetchHotelName();
+loadRooms();
 </script>
 </body>
 </html>

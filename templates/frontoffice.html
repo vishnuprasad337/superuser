@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Front Office Dashboard | Hotel ERP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --navy: #0f1f3d;
+            --blue: #1a56db;
+            --blue-light: #3b82f6;
+            --accent: #f59e0b;
+            --green: #10b981;
+            --red: #ef4444;
+            --purple: #7c3aed;
+            --teal: #0891b2;
+            --surface: #ffffff;
+            --surface-2: #f8fafc;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --sidebar-w: 270px;
+            --radius: 12px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+            --shadow: 0 4px 16px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,0.12);
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--surface-2); color: var(--text); min-height: 100vh; }
+
+        /* ── Sidebar ── */
+        .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-w); height: 100vh; background: var(--navy); display: flex; flex-direction: column; z-index: 100; overflow-y: auto; }
+        .sidebar-brand { padding: 22px 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .brand-logo { display: flex; align-items: center; gap: 10px; }
+        .brand-icon { width: 36px; height: 36px; background: var(--blue); border-radius: 9px; display: grid; place-items: center; color: white; font-size: 16px; }
+        .brand-name { font-size: 0.95rem; font-weight: 800; color: white; }
+        .brand-sub { font-size: 0.65rem; color: rgba(255,255,255,0.45); }
+        .sidebar-nav { flex: 1; padding: 14px 10px; }
+        .nav-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.3); padding: 12px 10px 6px; }
+        .nav-btn { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 9px; cursor: pointer; color: rgba(255,255,255,0.6); font-size: 0.83rem; font-weight: 500; transition: all 0.18s; border: none; background: transparent; width: 100%; text-align: left; font-family: inherit; }
+        .nav-btn i { width: 18px; }
+        .nav-btn:hover { background: rgba(255,255,255,0.07); color: white; }
+        .nav-btn.active { background: var(--blue); color: white; }
+        .sidebar-footer { padding: 14px 10px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.7rem; color: rgba(255,255,255,0.25); text-align: center; line-height: 1.5; }
+
+        /* ── Main ── */
+        .main { margin-left: var(--sidebar-w); min-height: 100vh; padding: 24px; }
+        .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+        .topbar-left h1 { font-size: 1.5rem; font-weight: 800; }
+        .topbar-left p { font-size: 0.82rem; color: var(--text-muted); margin-top: 2px; }
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        /* ── Stats ── */
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+        .stat-card { background: var(--surface); border-radius: var(--radius); padding: 18px 20px; border: 1px solid var(--border); display: flex; align-items: center; gap: 14px; transition: transform 0.18s; cursor: pointer; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+        .stat-icon { width: 46px; height: 46px; border-radius: 11px; display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0; }
+        .stat-icon.green { background: #ecfdf5; color: var(--green); }
+        .stat-icon.amber { background: #fffbeb; color: var(--accent); }
+        .stat-icon.purple { background: #f5f3ff; color: var(--purple); }
+        .stat-icon.blue { background: #eff6ff; color: var(--blue); }
+        .stat-icon.red { background: #fef2f2; color: var(--red); }
+        .stat-icon.teal { background: #ecfeff; color: var(--teal); }
+        .stat-number { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); }
+
+        /* ── Card ── */
+        .card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 20px; }
+        .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+        .card-title { font-size: 0.92rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .card-body { padding: 20px; }
+
+        /* ── Room Type Grid ── */
+        .room-type-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px; }
+        .room-type-card { border: 2px solid var(--border); border-radius: var(--radius); padding: 18px 16px; background: var(--surface); transition: all 0.2s; cursor: pointer; position: relative; overflow: hidden; }
+        .room-type-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--blue); }
+        .room-type-card.available::before { background: var(--green); }
+        .room-type-card.limited::before { background: var(--accent); }
+        .room-type-card.full::before { background: var(--red); }
+        .room-type-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+        .room-type-name { font-size: 1rem; font-weight: 700; margin-bottom: 12px; }
+        .room-type-meta { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+        .room-type-price { font-size: 1.1rem; font-weight: 800; color: var(--blue); margin-top: 10px; }
+        .room-avail-badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 0.68rem; font-weight: 600; margin-top: 8px; }
+        .badge-available { background: #ecfdf5; color: #065f46; }
+        .badge-limited { background: #fffbeb; color: #b45309; }
+        .badge-full { background: #fef2f2; color: #b91c1c; }
+
+        /* ── Table ── */
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+        thead th { background: var(--surface-2); color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.05em; padding: 10px 14px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
+        tbody td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background: var(--surface-2); }
+
+        /* ── Booking/Guest Items ── */
+        .booking-item { display: flex; align-items: center; gap: 14px; padding: 14px; border-bottom: 1px solid var(--border); transition: background 0.15s; }
+        .booking-item:last-child { border-bottom: none; }
+        .booking-item:hover { background: var(--surface-2); }
+        .booking-avatar { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, var(--blue), var(--purple)); color: white; display: grid; place-items: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+        .booking-info { flex: 1; }
+        .booking-name { font-weight: 600; font-size: 0.85rem; }
+        .booking-desc { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+        .booking-meta { text-align: right; font-size: 0.72rem; color: var(--text-muted); }
+        .booking-room { font-weight: 700; font-size: 0.92rem; color: var(--text); }
+
+        /* ── Status badges ── */
+        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 20px; font-size: 0.68rem; font-weight: 600; }
+        .badge-confirmed { background: #ecfdf5; color: #065f46; }
+        .badge-checked-in { background: #eff6ff; color: #1e40af; }
+        .badge-checked-out { background: #f1f5f9; color: #475569; }
+        .badge-pending { background: #fffbeb; color: #b45309; }
+        .badge-cancelled { background: #fef2f2; color: #b91c1c; }
+
+        /* ── Buttons ── */
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.18s; font-family: inherit; }
+        .btn-primary { background: var(--blue); color: white; }
+        .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
+        .btn-success { background: var(--green); color: white; }
+        .btn-success:hover { background: #059669; transform: translateY(-1px); }
+        .btn-warning { background: var(--accent); color: white; }
+        .btn-warning:hover { background: #d97706; transform: translateY(-1px); }
+        .btn-danger { background: var(--red); color: white; }
+        .btn-danger:hover { background: #dc2626; transform: translateY(-1px); }
+        .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+        .btn-outline:hover { background: var(--surface-2); border-color: var(--blue-light); }
+        .btn-sm { padding: 5px 12px; font-size: 0.74rem; }
+
+        /* ── Form ── */
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+        .form-control { width: 100%; padding: 9px 13px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.83rem; font-family: inherit; background: var(--surface); color: var(--text); }
+        .form-control:focus { outline: none; border-color: var(--blue-light); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+        /* ── Modal ── */
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 200; display: none; place-items: center; }
+        .modal-backdrop.open { display: grid; }
+        .modal { background: var(--surface); border-radius: 16px; width: 100%; max-width: 560px; box-shadow: var(--shadow-lg); animation: modalIn 0.2s ease; }
+        .modal-lg { max-width: 680px; }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .modal-header { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header span { font-size: 1.05rem; font-weight: 700; }
+        .modal-close { width: 30px; height: 30px; border-radius: 8px; border: none; background: var(--surface-2); cursor: pointer; font-size: 1.2rem; transition: all 0.15s; }
+        .modal-close:hover { background: #fee2e2; color: var(--red); }
+        .modal-body { padding: 22px; max-height: 70vh; overflow-y: auto; }
+        .modal-footer { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+
+        /* ── Toast ── */
+        .toast-stack { position: fixed; top: 20px; right: 20px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+        .toast { padding: 12px 16px; border-radius: 10px; font-size: 0.82rem; font-weight: 500; background: var(--green); color: white; box-shadow: var(--shadow-lg); animation: slideIn 0.3s ease; display: flex; align-items: center; gap: 10px; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        .toast.error { background: var(--red); }
+        .toast.info { background: var(--blue); }
+
+        /* ── Misc ── */
+        .menu-btn { display: none; position: fixed; top: 14px; left: 14px; z-index: 150; background: var(--navy); color: white; border: none; width: 38px; height: 38px; border-radius: 9px; cursor: pointer; font-size: 1rem; }
+        .tab-bar { display: flex; gap: 2px; background: var(--surface-2); border-radius: 8px; padding: 3px; }
+        .tab-btn { padding: 6px 14px; border-radius: 6px; border: none; background: transparent; font-size: 0.78rem; font-weight: 600; cursor: pointer; color: var(--text-muted); transition: all 0.15s; }
+        .tab-btn.active { background: var(--surface); color: var(--blue); box-shadow: var(--shadow-sm); }
+        .empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+        .empty i { font-size: 2rem; margin-bottom: 10px; display: block; opacity: 0.5; }
+        .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .divider { height: 1px; background: var(--border); margin: 16px 0; }
+        .text-muted { color: var(--text-muted); font-size: 0.75rem; }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        /* ── Quick Action Grid ── */
+        .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px; }
+        .quick-action-btn { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 12px; text-align: center; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+        .quick-action-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: var(--blue-light); }
+        .quick-action-btn .qa-icon { width: 40px; height: 40px; border-radius: 10px; background: #eff6ff; color: var(--blue); display: grid; place-items: center; margin: 0 auto 8px; font-size: 1rem; }
+        .quick-action-btn .qa-label { font-size: 0.75rem; font-weight: 600; color: var(--text); }
+
+        /* ── Timeline ── */
+        .timeline { position: relative; padding-left: 20px; }
+        .timeline::before { content: ''; position: absolute; left: 6px; top: 4px; bottom: 4px; width: 2px; background: var(--border); }
+        .timeline-item { position: relative; padding-bottom: 20px; }
+        .timeline-item:last-child { padding-bottom: 0; }
+        .timeline-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--blue); border: 2px solid white; box-shadow: 0 0 0 2px var(--blue); position: absolute; left: -17px; top: 2px; }
+        .timeline-dot.green { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
+        .timeline-dot.amber { background: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+        .timeline-dot.red { background: var(--red); box-shadow: 0 0 0 2px var(--red); }
+        .timeline-title { font-size: 0.82rem; font-weight: 600; }
+        .timeline-desc { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+        .timeline-time { font-size: 0.68rem; color: var(--text-light); margin-top: 2px; }
+
+        /* ── Guest Profile ── */
+        .guest-profile { display: flex; align-items: center; gap: 12px; }
+        .guest-avatar-lg { width: 52px; height: 52px; border-radius: 12px; background: linear-gradient(135deg, var(--blue), var(--purple)); color: white; display: grid; place-items: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0; }
+
+        @media (max-width: 900px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; padding: 16px; padding-top: 60px; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .quick-actions { grid-template-columns: repeat(2, 1fr); }
+            .menu-btn { display: flex; align-items: center; justify-content: center; }
+            .form-row, .form-row-3, .two-col { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<button class="menu-btn" id="menuBtn"><i class="fas fa-bars"></i></button>
+
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-logo">
+            <div class="brand-icon"><i class="fas fa-hotel"></i></div>
+            <div>
+                <div class="brand-name">Hotel ERP</div>
+                <div class="brand-sub">Front Office</div>
+            </div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-label">Front Office</div>
+        <button class="nav-btn active" data-panel="dashboard"><i class="fas fa-th-large"></i> Dashboard</button>
+        <button class="nav-btn" data-panel="bookings"><i class="fas fa-calendar-check"></i> Bookings</button>
+        <button class="nav-btn" data-panel="checkin"><i class="fas fa-sign-in-alt"></i> Check-In</button>
+        <button class="nav-btn" data-panel="checkout"><i class="fas fa-sign-out-alt"></i> Check-Out</button>
+        <button class="nav-btn" data-panel="guests"><i class="fas fa-users"></i> Guest Management</button>
+        <button class="nav-btn" data-panel="rooms"><i class="fas fa-door-open"></i> Room Overview</button>
+    </nav>
+    <div class="sidebar-footer">
+        <i class="fas fa-user-circle"></i> {{ staff.name }}<br>
+        <i class="fas fa-building"></i> {{ hotel.hotel_name }}<br>
+        <i class="fas fa-id-badge"></i> Receptionist
+    </div>
+</aside>
+
+<main class="main">
+
+    <!-- ═══════════════════════════════
+         PANEL: Dashboard
+    ═══════════════════════════════ -->
+    <div class="panel active" id="panel-dashboard">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-th-large"></i> Front Office Dashboard</h1>
+                <p>Welcome back, {{ staff.name }}! Here's your hotel overview for today.</p>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-primary btn-sm" onclick="openNewBookingModal()"><i class="fas fa-plus"></i> New Booking</button>
+                <button class="btn btn-outline btn-sm" onclick="switchPanel('checkin')"><i class="fas fa-sign-in-alt"></i> Check-In</button>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card" onclick="switchPanel('bookings')">
+                <div class="stat-icon blue"><i class="fas fa-calendar-check"></i></div>
+                <div><div class="stat-number" id="totalBookings">{{ total_bookings|default:0 }}</div><div class="stat-label">Total Bookings</div></div>
+            </div>
+            <div class="stat-card" onclick="switchPanel('checkin')">
+                <div class="stat-icon green"><i class="fas fa-sign-in-alt"></i></div>
+                <div><div class="stat-number" id="arrivals">{{ todays_arrivals|default:0 }}</div><div class="stat-label">Today's Arrivals</div></div>
+            </div>
+            <div class="stat-card" onclick="switchPanel('checkout')">
+                <div class="stat-icon amber"><i class="fas fa-sign-out-alt"></i></div>
+                <div><div class="stat-number" id="departures">{{ todays_departures|default:0 }}</div><div class="stat-label">Today's Departures</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="fas fa-bed"></i></div>
+                <div><div class="stat-number" id="occupancy">{{ occupied_rooms|default:0 }}</div><div class="stat-label">Occupied Rooms</div></div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <button class="quick-action-btn" onclick="openNewBookingModal()">
+                <div class="qa-icon"><i class="fas fa-plus"></i></div>
+                <div class="qa-label">New Booking</div>
+            </button>
+            <button class="quick-action-btn" onclick="openCheckinModal()">
+                <div class="qa-icon" style="background:#ecfdf5; color:var(--green);"><i class="fas fa-sign-in-alt"></i></div>
+                <div class="qa-label">Check In Guest</div>
+            </button>
+            <button class="quick-action-btn" onclick="openCheckoutModal()">
+                <div class="qa-icon" style="background:#fffbeb; color:var(--accent);"><i class="fas fa-sign-out-alt"></i></div>
+                <div class="qa-label">Check Out Guest</div>
+            </button>
+            <button class="quick-action-btn" onclick="switchPanel('guests')">
+                <div class="qa-icon" style="background:#f5f3ff; color:var(--purple);"><i class="fas fa-user-plus"></i></div>
+                <div class="qa-label">Add Guest</div>
+            </button>
+        </div>
+
+        <div class="two-col">
+            <!-- Today's Arrivals -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><i class="fas fa-sign-in-alt" style="color:var(--green)"></i> Today's Arrivals</div>
+                    <button class="btn btn-outline btn-sm" onclick="switchPanel('checkin')">View All</button>
+                </div>
+                <div id="dashboardArrivals">
+                    {% for booking in todays_arrival_list %}
+                    <div class="booking-item">
+                        <div class="booking-avatar">{{ booking.guest_name|slice:":1"|upper }}</div>
+                        <div class="booking-info">
+                            <div class="booking-name">{{ booking.guest_name }}</div>
+                            <div class="booking-desc"><i class="fas fa-door-open"></i> Room {{ booking.room_number }} &bull; {{ booking.nights }} night(s)</div>
+                        </div>
+                        <div>
+                            <span class="badge badge-confirmed">Confirmed</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty"><i class="fas fa-calendar-day"></i><p>No arrivals today</p></div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Today's Departures -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><i class="fas fa-sign-out-alt" style="color:var(--accent)"></i> Today's Departures</div>
+                    <button class="btn btn-outline btn-sm" onclick="switchPanel('checkout')">View All</button>
+                </div>
+                <div id="dashboardDepartures">
+                    {% for booking in todays_departure_list %}
+                    <div class="booking-item">
+                        <div class="booking-avatar">{{ booking.guest_name|slice:":1"|upper }}</div>
+                        <div class="booking-info">
+                            <div class="booking-name">{{ booking.guest_name }}</div>
+                            <div class="booking-desc"><i class="fas fa-door-open"></i> Room {{ booking.room_number }}</div>
+                        </div>
+                        <div>
+                            <span class="badge badge-checked-in">In-House</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty"><i class="fas fa-calendar-day"></i><p>No departures today</p></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card">
+            <div class="card-header"><div class="card-title"><i class="fas fa-history"></i> Recent Activity</div></div>
+            <div class="card-body">
+                <div class="timeline">
+                    {% for activity in recent_activity %}
+                    <div class="timeline-item">
+                        <div class="timeline-dot {{ activity.color|default:'blue' }}"></div>
+                        <div class="timeline-title">{{ activity.title }}</div>
+                        <div class="timeline-desc">{{ activity.description }}</div>
+                        <div class="timeline-time">{{ activity.time }}</div>
+                    </div>
+                    {% empty %}
+                    <div class="empty"><i class="fas fa-history"></i><p>No recent activity</p></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════
+         PANEL: Bookings
+    ═══════════════════════════════ -->
+    <div class="panel" id="panel-bookings">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-calendar-check"></i> Bookings</h1>
+                <p>Manage all reservations</p>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-primary btn-sm" onclick="openNewBookingModal()"><i class="fas fa-plus"></i> New Booking</button>
+            </div>
+        </div>
+
+        <div class="stats-row" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-calendar"></i></div><div><div class="stat-number">{{ total_bookings|default:0 }}</div><div class="stat-label">Total Bookings</div></div></div>
+            <div class="stat-card"><div class="stat-icon amber"><i class="fas fa-hourglass-half"></i></div><div><div class="stat-number">{{ pending_bookings|default:0 }}</div><div class="stat-label">Pending</div></div></div>
+            <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check-circle"></i></div><div><div class="stat-number">{{ confirmed_bookings|default:0 }}</div><div class="stat-label">Confirmed</div></div></div>
+            <div class="stat-card"><div class="stat-icon red"><i class="fas fa-times-circle"></i></div><div><div class="stat-number">{{ cancelled_bookings|default:0 }}</div><div class="stat-label">Cancelled</div></div></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-list"></i> All Bookings</div>
+                <div class="tab-bar" id="bookingFilterBar">
+                    <button class="tab-btn active" onclick="filterBookings('all', this)">All</button>
+                    <button class="tab-btn" onclick="filterBookings('confirmed', this)">Confirmed</button>
+                    <button class="tab-btn" onclick="filterBookings('checked_in', this)">In-House</button>
+                    <button class="tab-btn" onclick="filterBookings('checked_out', this)">Checked Out</button>
+                    <button class="tab-btn" onclick="filterBookings('pending', this)">Pending</button>
+                </div>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Guest</th>
+                                <th>Room</th>
+                                <th>Check-In</th>
+                                <th>Check-Out</th>
+                                <th>Nights</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookingsTableBody">
+                            {% for booking in bookings %}
+                            <tr data-status="{{ booking.status }}">
+                                <td><strong>#{{ booking.id }}</strong></td>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <div style="width:28px; height:28px; border-radius:7px; background:linear-gradient(135deg,var(--blue),var(--purple)); color:white; display:grid; place-items:center; font-size:0.72rem; font-weight:700; flex-shrink:0;">{{ booking.guest_name|slice:":1"|upper }}</div>
+                                        <span>{{ booking.guest_name }}</span>
+                                    </div>
+                                </td>
+                                <td>{{ booking.room_number }}</td>
+                                <td>{{ booking.check_in|date:"M d, Y"|default:"-" }}</td>
+                                <td>{{ booking.check_out|date:"M d, Y"|default:"-" }}</td>
+                                <td>{{ booking.nights|default:"-" }}</td>
+                                <td><strong>₹{{ booking.total_amount|default:"0" }}</strong></td>
+                                <td><span class="badge badge-{{ booking.status|lower|default:'pending' }}">{{ booking.status|title|default:"Pending" }}</span></td>
+                                <td>
+                                    <div style="display:flex; gap:4px;">
+                                        <button class="btn btn-sm btn-outline" onclick="viewBooking('{{ booking.id }}')"><i class="fas fa-eye"></i></button>
+                                        {% if booking.status == 'confirmed' %}
+                                        <button class="btn btn-sm btn-success" onclick="checkInGuest('{{ booking.id }}', '{{ booking.guest_name }}', '{{ booking.room_number }}')"><i class="fas fa-sign-in-alt"></i></button>
+                                        {% endif %}
+                                        {% if booking.status == 'checked_in' %}
+                                        <button class="btn btn-sm btn-warning" onclick="checkOutGuest('{{ booking.id }}', '{{ booking.guest_name }}', '{{ booking.room_number }}')"><i class="fas fa-sign-out-alt"></i></button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="9"><div class="empty"><i class="fas fa-calendar-times"></i><p>No bookings found</p><button class="btn btn-sm btn-primary" onclick="openNewBookingModal()" style="margin-top:10px;"><i class="fas fa-plus"></i> Create First Booking</button></div></td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════
+         PANEL: Check-In
+    ═══════════════════════════════ -->
+    <div class="panel" id="panel-checkin">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-sign-in-alt"></i> Check-In</h1>
+                <p>Process guest arrivals</p>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="switchPanel('dashboard')"><i class="fas fa-arrow-left"></i> Back</button>
+        </div>
+
+        <div class="two-col">
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-search"></i> Find Booking</div></div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label">Search by Booking ID or Guest Name</label>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="checkinSearch" class="form-control" placeholder="Booking ID or guest name...">
+                            <button class="btn btn-primary" onclick="searchCheckin()"><i class="fas fa-search"></i></button>
+                        </div>
+                    </div>
+                    <div id="checkinSearchResults">
+                        <div class="empty" style="padding:20px;"><i class="fas fa-search"></i><p>Search for a booking to check in</p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><div class="card-title" style="color:var(--green);"><i class="fas fa-sign-in-alt"></i> Today's Expected Arrivals</div></div>
+                <div id="checkinArrivals">
+                    {% for booking in todays_arrival_list %}
+                    <div class="booking-item">
+                        <div class="booking-avatar">{{ booking.guest_name|slice:":1"|upper }}</div>
+                        <div class="booking-info">
+                            <div class="booking-name">{{ booking.guest_name }}</div>
+                            <div class="booking-desc">Room {{ booking.room_number }} &bull; {{ booking.nights }} night(s)</div>
+                        </div>
+                        <button class="btn btn-sm btn-success" onclick="checkInGuest('{{ booking.id }}', '{{ booking.guest_name }}', '{{ booking.room_number }}')">
+                            <i class="fas fa-sign-in-alt"></i> Check In
+                        </button>
+                    </div>
+                    {% empty %}
+                    <div class="empty"><i class="fas fa-moon"></i><p>No arrivals expected today</p></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════
+         PANEL: Check-Out
+    ═══════════════════════════════ -->
+    <div class="panel" id="panel-checkout">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-sign-out-alt"></i> Check-Out</h1>
+                <p>Process guest departures</p>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="switchPanel('dashboard')"><i class="fas fa-arrow-left"></i> Back</button>
+        </div>
+
+        <div class="two-col">
+            <div class="card">
+                <div class="card-header"><div class="card-title"><i class="fas fa-search"></i> Find In-House Guest</div></div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label">Search by Room Number or Guest Name</label>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="checkoutSearch" class="form-control" placeholder="Room number or guest name...">
+                            <button class="btn btn-primary" onclick="searchCheckout()"><i class="fas fa-search"></i></button>
+                        </div>
+                    </div>
+                    <div id="checkoutSearchResults">
+                        <div class="empty" style="padding:20px;"><i class="fas fa-search"></i><p>Search for a guest to check out</p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><div class="card-title" style="color:var(--accent);"><i class="fas fa-sign-out-alt"></i> Today's Expected Departures</div></div>
+                <div id="checkoutDepartures">
+                    {% for booking in todays_departure_list %}
+                    <div class="booking-item">
+                        <div class="booking-avatar">{{ booking.guest_name|slice:":1"|upper }}</div>
+                        <div class="booking-info">
+                            <div class="booking-name">{{ booking.guest_name }}</div>
+                            <div class="booking-desc">Room {{ booking.room_number }}</div>
+                        </div>
+                        <button class="btn btn-sm btn-warning" onclick="checkOutGuest('{{ booking.id }}', '{{ booking.guest_name }}', '{{ booking.room_number }}')">
+                            <i class="fas fa-sign-out-alt"></i> Check Out
+                        </button>
+                    </div>
+                    {% empty %}
+                    <div class="empty"><i class="fas fa-sun"></i><p>No departures expected today</p></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════
+         PANEL: Guests
+    ═══════════════════════════════ -->
+    <div class="panel" id="panel-guests">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-users"></i> Guest Management</h1>
+                <p>View and manage guest profiles</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openAddGuestModal()"><i class="fas fa-user-plus"></i> Add Guest</button>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-list"></i> All Guests</div>
+                <input type="text" class="form-control" id="guestSearch" style="max-width:220px; padding:6px 12px; font-size:0.78rem;" placeholder="Search guests...">
+            </div>
+            <div class="card-body" style="padding:0;">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Guest</th>
+                                <th>Phone</th>
+                                <th>Email</th>
+                                <th>ID Type</th>
+                                <th>Last Stay</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for guest in guests %}
+                            <tr>
+                                <td>
+                                    <div class="guest-profile">
+                                        <div style="width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,var(--blue),var(--purple)); color:white; display:grid; place-items:center; font-size:0.78rem; font-weight:700; flex-shrink:0;">{{ guest.name|slice:":1"|upper }}</div>
+                                        <div>
+                                            <div style="font-weight:600; font-size:0.85rem;">{{ guest.name }}</div>
+                                            <div style="font-size:0.68rem; color:var(--text-muted);">{{ guest.nationality|default:"" }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ guest.phone|default:"-" }}</td>
+                                <td>{{ guest.email|default:"-" }}</td>
+                                <td>{{ guest.id_type|default:"-" }}</td>
+                                <td>{{ guest.last_stay|date:"M d, Y"|default:"First Visit" }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline" onclick="viewGuest('{{ guest.id }}')"><i class="fas fa-eye"></i></button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6"><div class="empty"><i class="fas fa-users"></i><p>No guests found</p></div></td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════
+         PANEL: Rooms
+    ═══════════════════════════════ -->
+    <div class="panel" id="panel-rooms">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-door-open"></i> Room Overview</h1>
+                <p>Room types and availability</p>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-layer-group"></i></div><div><div class="stat-number">{{ rooms|length|default:0 }}</div><div class="stat-label">Room Types</div></div></div>
+            <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check-circle"></i></div><div><div class="stat-number">{{ total_available|default:0 }}</div><div class="stat-label">Available Rooms</div></div></div>
+            <div class="stat-card"><div class="stat-icon amber"><i class="fas fa-bed"></i></div><div><div class="stat-number">{{ total_occupied|default:0 }}</div><div class="stat-label">Occupied</div></div></div>
+            <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-percentage"></i></div><div><div class="stat-number">{{ occupancy_rate|default:0 }}%</div><div class="stat-label">Occupancy Rate</div></div></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-th-large"></i> Room Types</div>
+                <div class="tab-bar" id="roomTypeFilterBar">
+                    <button class="tab-btn active" onclick="filterRoomTypes('all', this)">All</button>
+                    <button class="tab-btn" onclick="filterRoomTypes('available', this)">Available</button>
+                    <button class="tab-btn" onclick="filterRoomTypes('limited', this)">Limited</button>
+                    <button class="tab-btn" onclick="filterRoomTypes('full', this)">Full</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="room-type-grid" id="roomTypeGrid">
+                    {% for room in rooms %}
+                    {% if room.available_rooms == 0 %}
+                    {% with avail_class="full" badge_class="badge-full" badge_text="Fully Booked" %}
+                    <div class="room-type-card {{ avail_class }}" data-avail="{{ avail_class }}">
+                        <div class="room-type-name">{{ room.room_type }}</div>
+                        <div class="room-type-meta"><i class="fas fa-layer-group"></i> Total: {{ room.total_rooms }}</div>
+                        <div class="room-type-meta"><i class="fas fa-check"></i> Available: <strong style="color:var(--red)">{{ room.available_rooms }}</strong></div>
+                        <div class="room-type-price">₹{{ room.price }}<span style="font-size:0.68rem; font-weight:400; color:var(--text-muted);"> / night</span></div>
+                        <span class="room-avail-badge {{ badge_class }}">{{ badge_text }}</span>
+                        <div style="margin-top:12px;">
+                            <button class="btn btn-sm btn-outline" style="width:100%; justify-content:center;" disabled><i class="fas fa-ban"></i> Not Available</button>
+                        </div>
+                    </div>
+                    {% endwith %}
+                    {% elif room.available_rooms <= 3 %}
+                    {% with avail_class="limited" badge_class="badge-limited" badge_text="Limited Availability" %}
+                    <div class="room-type-card {{ avail_class }}" data-avail="{{ avail_class }}">
+                        <div class="room-type-name">{{ room.room_type }}</div>
+                        <div class="room-type-meta"><i class="fas fa-layer-group"></i> Total: {{ room.total_rooms }}</div>
+                        <div class="room-type-meta"><i class="fas fa-check"></i> Available: <strong style="color:var(--accent)">{{ room.available_rooms }}</strong></div>
+                        <div class="room-type-price">₹{{ room.price }}<span style="font-size:0.68rem; font-weight:400; color:var(--text-muted);"> / night</span></div>
+                        <span class="room-avail-badge {{ badge_class }}">{{ badge_text }}</span>
+                        <div style="margin-top:12px;">
+                            <button class="btn btn-sm btn-primary" style="width:100%; justify-content:center;" onclick="openNewBookingModal('{{ room.room_type }}')"><i class="fas fa-calendar-plus"></i> Book Now</button>
+                        </div>
+                    </div>
+                    {% endwith %}
+                    {% else %}
+                    {% with avail_class="available" badge_class="badge-available" badge_text="Available" %}
+                    <div class="room-type-card {{ avail_class }}" data-avail="{{ avail_class }}">
+                        <div class="room-type-name">{{ room.room_type }}</div>
+                        <div class="room-type-meta"><i class="fas fa-layer-group"></i> Total: {{ room.total_rooms }}</div>
+                        <div class="room-type-meta"><i class="fas fa-check"></i> Available: <strong style="color:var(--green)">{{ room.available_rooms }}</strong></div>
+                        <div class="room-type-price">₹{{ room.price }}<span style="font-size:0.68rem; font-weight:400; color:var(--text-muted);"> / night</span></div>
+                        <span class="room-avail-badge {{ badge_class }}">{{ badge_text }}</span>
+                        <div style="margin-top:12px;">
+                            <button class="btn btn-sm btn-primary" style="width:100%; justify-content:center;" onclick="openNewBookingModal('{{ room.room_type }}')"><i class="fas fa-calendar-plus"></i> Book Now</button>
+                        </div>
+                    </div>
+                    {% endwith %}
+                    {% endif %}
+                    {% empty %}
+                    <div class="empty" style="grid-column:1/-1"><i class="fas fa-door-closed"></i><p>No rooms found</p></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- ═══════════════════════════════
+     MODALS
+═══════════════════════════════ -->
+
+<!-- New Booking Modal -->
+<div class="modal-backdrop" id="newBookingModal">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <span><i class="fas fa-calendar-plus"></i> New Booking</span>
+            <button class="modal-close" onclick="closeModal('newBookingModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Guest Name *</label>
+                    <input type="text" id="bookingGuestName" class="form-control" placeholder="Full name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone Number *</label>
+                    <input type="text" id="bookingPhone" class="form-control" placeholder="+91 XXXXX XXXXX">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Room Type *</label>
+                    <select id="bookingRoomType" class="form-control">
+                        <option value="">Select room type</option>
+                        {% for room in rooms %}
+                        <option value="{{ room.room_type }}">{{ room.room_type }} — ₹{{ room.price }}/night ({{ room.available_rooms }} available)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Number of Guests *</label>
+                    <input type="number" id="bookingGuests" class="form-control" value="1" min="1">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Check-In Date *</label>
+                    <input type="date" id="bookingCheckIn" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Check-Out Date *</label>
+                    <input type="date" id="bookingCheckOut" class="form-control">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Special Requests</label>
+                <textarea id="bookingRequests" class="form-control" rows="2" placeholder="Any special requirements..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('newBookingModal')">Cancel</button>
+            <button class="btn btn-primary" id="saveBookingBtn" onclick="saveBooking(event)"><i class="fas fa-calendar-check"></i> Confirm Booking</button>
+        </div>
+    </div>
+</div>
+
+<!-- Check-In Modal -->
+<div class="modal-backdrop" id="checkinModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span><i class="fas fa-sign-in-alt"></i> Guest Check-In</span>
+            <button class="modal-close" onclick="closeModal('checkinModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="checkinBookingId">
+            <div id="checkinGuestInfo" style="background:var(--surface-2); border-radius:var(--radius); padding:14px; margin-bottom:16px;">
+                <p style="font-size:0.75rem; color:var(--text-muted);">Guest</p>
+                <p id="checkinGuestDisplay" style="font-weight:700; font-size:1rem;"></p>
+                <p id="checkinRoomDisplay" style="font-size:0.82rem; color:var(--text-muted); margin-top:4px;"></p>
+            </div>
+            <div class="form-group">
+                <label class="form-label">ID Type</label>
+                <select id="checkinIdType" class="form-control">
+                    <option value="Aadhaar">Aadhaar Card</option>
+                    <option value="Passport">Passport</option>
+                    <option value="Driving License">Driving License</option>
+                    <option value="Voter ID">Voter ID</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">ID Number</label>
+                <input type="text" id="checkinIdNumber" class="form-control" placeholder="ID number">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Notes</label>
+                <textarea id="checkinNotes" class="form-control" rows="2" placeholder="Any notes..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('checkinModal')">Cancel</button>
+            <button class="btn btn-success" id="confirmCheckinBtn" onclick="confirmCheckIn(event)"><i class="fas fa-sign-in-alt"></i> Confirm Check-In</button>
+        </div>
+    </div>
+</div>
+
+<!-- Check-Out Modal -->
+<div class="modal-backdrop" id="checkoutModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span><i class="fas fa-sign-out-alt"></i> Guest Check-Out</span>
+            <button class="modal-close" onclick="closeModal('checkoutModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="checkoutBookingId">
+            <div id="checkoutGuestInfo" style="background:var(--surface-2); border-radius:var(--radius); padding:14px; margin-bottom:16px;">
+                <p style="font-size:0.75rem; color:var(--text-muted);">Guest</p>
+                <p id="checkoutGuestDisplay" style="font-weight:700; font-size:1rem;"></p>
+                <p id="checkoutRoomDisplay" style="font-size:0.82rem; color:var(--text-muted); margin-top:4px;"></p>
+            </div>
+            <div id="checkoutBillSummary" style="border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-bottom:16px;">
+                <div style="font-size:0.75rem; font-weight:600; color:var(--text-muted); margin-bottom:8px;">BILLING SUMMARY</div>
+                <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:6px;">
+                    <span>Room Charges</span><span id="coRoomCharges">₹0</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:6px;">
+                    <span>Taxes (18% GST)</span><span id="coTax">₹0</span>
+                </div>
+                <div style="height:1px; background:var(--border); margin:8px 0;"></div>
+                <div style="display:flex; justify-content:space-between; font-weight:700;">
+                    <span>Total</span><span id="coTotal">₹0</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Payment Method</label>
+                <select id="checkoutPayment" class="form-control">
+                    <option value="cash">Cash</option>
+                    <option value="card">Credit/Debit Card</option>
+                    <option value="upi">UPI</option>
+                    <option value="bank_transfer">Bank Transfer</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('checkoutModal')">Cancel</button>
+            <button class="btn btn-warning" id="confirmCheckoutBtn" onclick="confirmCheckOut(event)"><i class="fas fa-sign-out-alt"></i> Confirm Check-Out</button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Guest Modal -->
+<div class="modal-backdrop" id="addGuestModal">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <span><i class="fas fa-user-plus"></i> Add New Guest</span>
+            <button class="modal-close" onclick="closeModal('addGuestModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Full Name *</label>
+                    <input type="text" id="guestName" class="form-control" placeholder="Full name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone *</label>
+                    <input type="text" id="guestPhone" class="form-control" placeholder="+91 XXXXX XXXXX">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="guestEmail" class="form-control" placeholder="guest@email.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nationality</label>
+                    <input type="text" id="guestNationality" class="form-control" placeholder="e.g., Indian">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">ID Type</label>
+                    <select id="guestIdType" class="form-control">
+                        <option value="Aadhaar">Aadhaar Card</option>
+                        <option value="Passport">Passport</option>
+                        <option value="Driving License">Driving License</option>
+                        <option value="Voter ID">Voter ID</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ID Number</label>
+                    <input type="text" id="guestIdNumber" class="form-control" placeholder="ID number">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('addGuestModal')">Cancel</button>
+            <button class="btn btn-primary" id="saveGuestBtn" onclick="saveGuest(event)"><i class="fas fa-user-plus"></i> Add Guest</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+/* ── Utility ── */
+function toast(msg, type = 'success') {
+    const stack = document.getElementById('toastStack');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'info' ? 'fa-info-circle' : 'fa-exclamation-circle'}"></i> ${msg}`;
+    stack.appendChild(el);
+    setTimeout(() => el.remove(), 3500);
+}
+
+function closeModal(id) {
+    const m = document.getElementById(id);
+    if (m) m.classList.remove('open');
+}
+
+function openModal(id) {
+    const m = document.getElementById(id);
+    if (m) m.classList.add('open');
+}
+
+function getCsrfToken() {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.startsWith('csrftoken=')) {
+                cookieValue = decodeURIComponent(cookie.substring(10));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function setLoading(btn, loading, originalText) {
+    btn.disabled = loading;
+    btn.innerHTML = loading ? '<span class="spinner"></span> Please wait...' : originalText;
+}
+
+/* ── Panel Navigation ── */
+function switchPanel(panelName) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById(`panel-${panelName}`);
+    if (target) target.classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.querySelector(`.nav-btn[data-panel="${panelName}"]`);
+    if (activeBtn) activeBtn.classList.add('active');
+}
+
+/* ── Filters ── */
+function filterBookings(status, btn) {
+    const rows = document.querySelectorAll('#bookingsTableBody tr[data-status]');
+    rows.forEach(row => {
+        row.style.display = (status === 'all' || row.dataset.status === status) ? '' : 'none';
+    });
+    document.querySelectorAll('#bookingFilterBar .tab-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+}
+
+function filterRoomTypes(avail, btn) {
+    const cards = document.querySelectorAll('.room-type-card');
+    cards.forEach(card => {
+        card.style.display = (avail === 'all' || card.dataset.avail === avail) ? '' : 'none';
+    });
+    document.querySelectorAll('#roomTypeFilterBar .tab-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+}
+
+/* ── Modals ── */
+function openNewBookingModal(roomType = '') {
+    document.getElementById('bookingGuestName').value = '';
+    document.getElementById('bookingPhone').value = '';
+    document.getElementById('bookingRoomType').value = roomType;
+    document.getElementById('bookingGuests').value = '1';
+    document.getElementById('bookingCheckIn').value = '';
+    document.getElementById('bookingCheckOut').value = '';
+    document.getElementById('bookingRequests').value = '';
+    // Set min date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('bookingCheckIn').min = today;
+    document.getElementById('bookingCheckOut').min = today;
+    openModal('newBookingModal');
+}
+
+function openCheckinModal() { openModal('checkinModal'); }
+function openCheckoutModal() { openModal('checkoutModal'); }
+function openAddGuestModal() { openModal('addGuestModal'); }
+
+function checkInGuest(bookingId, guestName, roomNumber) {
+    document.getElementById('checkinBookingId').value = bookingId;
+    document.getElementById('checkinGuestDisplay').textContent = guestName;
+    document.getElementById('checkinRoomDisplay').textContent = `Room ${roomNumber}`;
+    document.getElementById('checkinIdNumber').value = '';
+    document.getElementById('checkinNotes').value = '';
+    openModal('checkinModal');
+}
+
+function checkOutGuest(bookingId, guestName, roomNumber) {
+    document.getElementById('checkoutBookingId').value = bookingId;
+    document.getElementById('checkoutGuestDisplay').textContent = guestName;
+    document.getElementById('checkoutRoomDisplay').textContent = `Room ${roomNumber}`;
+    openModal('checkoutModal');
+}
+
+function viewBooking(bookingId) {
+    toast(`Opening booking #${bookingId}`, 'info');
+    // Implement: open booking detail modal or navigate
+}
+
+function viewGuest(guestId) {
+    toast(`Opening guest profile #${guestId}`, 'info');
+    // Implement: open guest detail modal
+}
+
+/* ── API Calls ── */
+async function saveBooking(event) {
+    if (event) event.preventDefault();
+    const guestName = document.getElementById('bookingGuestName').value.trim();
+    const phone = document.getElementById('bookingPhone').value.trim();
+    const roomType = document.getElementById('bookingRoomType').value;
+    const guests = document.getElementById('bookingGuests').value;
+    const checkIn = document.getElementById('bookingCheckIn').value;
+    const checkOut = document.getElementById('bookingCheckOut').value;
+    const requests = document.getElementById('bookingRequests').value.trim();
+
+    if (!guestName) { toast('Please enter guest name', 'error'); return; }
+    if (!phone) { toast('Please enter phone number', 'error'); return; }
+    if (!roomType) { toast('Please select room type', 'error'); return; }
+    if (!checkIn) { toast('Please select check-in date', 'error'); return; }
+    if (!checkOut) { toast('Please select check-out date', 'error'); return; }
+    if (checkOut <= checkIn) { toast('Check-out must be after check-in', 'error'); return; }
+
+    const btn = document.getElementById('saveBookingBtn');
+    const originalText = btn.innerHTML;
+    setLoading(btn, true, originalText);
+
+    const formData = new FormData();
+    formData.append('guest_name', guestName);
+    formData.append('phone', phone);
+    formData.append('room_type', roomType);
+    formData.append('num_guests', guests);
+    formData.append('check_in', checkIn);
+    formData.append('check_out', checkOut);
+    formData.append('special_requests', requests);
+
+    try {
+        const response = await fetch('/create-booking/', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': getCsrfToken() }
+        });
+        const data = await response.json();
+        if (response.ok) {
+            toast('Booking created successfully!');
+            closeModal('newBookingModal');
+            setTimeout(() => window.location.reload(), 600);
+        } else {
+            toast(data.error || 'Failed to create booking', 'error');
+        }
+    } catch (error) {
+        toast('Network error: ' + error.message, 'error');
+    } finally {
+        setLoading(btn, false, originalText);
+    }
+}
+
+async function confirmCheckIn(event) {
+    if (event) event.preventDefault();
+    const bookingId = document.getElementById('checkinBookingId').value;
+    const idType = document.getElementById('checkinIdType').value;
+    const idNumber = document.getElementById('checkinIdNumber').value.trim();
+    const notes = document.getElementById('checkinNotes').value.trim();
+
+    const btn = document.getElementById('confirmCheckinBtn');
+    const originalText = btn.innerHTML;
+    setLoading(btn, true, originalText);
+
+    const formData = new FormData();
+    formData.append('booking_id', bookingId);
+    formData.append('id_type', idType);
+    formData.append('id_number', idNumber);
+    formData.append('notes', notes);
+
+    try {
+        const response = await fetch('/check-in/', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': getCsrfToken() }
+        });
+        const data = await response.json();
+        if (response.ok) {
+            toast('Guest checked in successfully!');
+            closeModal('checkinModal');
+            setTimeout(() => window.location.reload(), 600);
+        } else {
+            toast(data.error || 'Failed to check in', 'error');
+        }
+    } catch (error) {
+        toast('Network error: ' + error.message, 'error');
+    } finally {
+        setLoading(btn, false, originalText);
+    }
+}
+
+async function confirmCheckOut(event) {
+    if (event) event.preventDefault();
+    const bookingId = document.getElementById('checkoutBookingId').value;
+    const payment = document.getElementById('checkoutPayment').value;
+
+    const btn = document.getElementById('confirmCheckoutBtn');
+    const originalText = btn.innerHTML;
+    setLoading(btn, true, originalText);
+
+    const formData = new FormData();
+    formData.append('booking_id', bookingId);
+    formData.append('payment_method', payment);
+
+    try {
+        const response = await fetch('/check-out/', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': getCsrfToken() }
+        });
+        const data = await response.json();
+        if (response.ok) {
+            toast('Guest checked out successfully!');
+            closeModal('checkoutModal');
+            setTimeout(() => window.location.reload(), 600);
+        } else {
+            toast(data.error || 'Failed to check out', 'error');
+        }
+    } catch (error) {
+        toast('Network error: ' + error.message, 'error');
+    } finally {
+        setLoading(btn, false, originalText);
+    }
+}
+
+async function saveGuest(event) {
+    if (event) event.preventDefault();
+    const name = document.getElementById('guestName').value.trim();
+    const phone = document.getElementById('guestPhone').value.trim();
+    if (!name) { toast('Please enter guest name', 'error'); return; }
+    if (!phone) { toast('Please enter phone number', 'error'); return; }
+
+    const btn = document.getElementById('saveGuestBtn');
+    const originalText = btn.innerHTML;
+    setLoading(btn, true, originalText);
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('phone', phone);
+    formData.append('email', document.getElementById('guestEmail').value.trim());
+    formData.append('nationality', document.getElementById('guestNationality').value.trim());
+    formData.append('id_type', document.getElementById('guestIdType').value);
+    formData.append('id_number', document.getElementById('guestIdNumber').value.trim());
+
+    try {
+        const response = await fetch('/add-guest/', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': getCsrfToken() }
+        });
+        const data = await response.json();
+        if (response.ok) {
+            toast('Guest added successfully!');
+            closeModal('addGuestModal');
+            setTimeout(() => window.location.reload(), 600);
+        } else {
+            toast(data.error || 'Failed to add guest', 'error');
+        }
+    } catch (error) {
+        toast('Network error: ' + error.message, 'error');
+    } finally {
+        setLoading(btn, false, originalText);
+    }
+}
+
+function searchCheckin() {
+    const query = document.getElementById('checkinSearch').value.trim();
+    if (!query) { toast('Please enter a search term', 'error'); return; }
+    // Implement search — can do a fetch to a search endpoint
+    toast('Searching...', 'info');
+}
+
+function searchCheckout() {
+    const query = document.getElementById('checkoutSearch').value.trim();
+    if (!query) { toast('Please enter a search term', 'error'); return; }
+    toast('Searching...', 'info');
+}
+
+/* ── Sidebar / modal click-outside ── */
+document.getElementById('menuBtn').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('open');
+});
+
+document.querySelectorAll('.nav-btn[data-panel]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        switchPanel(btn.dataset.panel);
+        if (window.innerWidth <= 900) {
+            document.getElementById('sidebar').classList.remove('open');
+        }
+    });
+});
+
+document.querySelectorAll('.modal-backdrop').forEach(bd => {
+    bd.addEventListener('click', e => {
+        if (e.target === bd) bd.classList.remove('open');
+    });
+});
+
+console.log('Front Office dashboard loaded successfully');
+</script>
+</body>
+</html>

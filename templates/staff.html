@@ -3,1048 +3,1266 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Management | Hotel Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Staff Management | Hotel ERP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #667eea;
-            --secondary: #764ba2;
-            --success: #28a745;
-            --danger: #dc3545;
-            --warning: #ffc107;
-            --info: #17a2b8;
-            --dark: #2d3748;
-            --light: #f8f9fa;
-            --sidebar-width: 280px;
+            --navy: #0f1f3d;
+            --blue: #1a56db;
+            --blue-light: #3b82f6;
+            --accent: #f59e0b;
+            --green: #10b981;
+            --red: #ef4444;
+            --purple: #7c3aed;
+            --surface: #ffffff;
+            --surface-2: #f8fafc;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --sidebar-w: 270px;
+            --radius: 12px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+            --shadow: 0 4px 16px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,0.12);
         }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--surface-2); color: var(--text); min-height: 100vh; }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* ── SIDEBAR ── */
+        .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-w); height: 100vh; background: var(--navy); display: flex; flex-direction: column; z-index: 100; overflow: hidden; }
+        .sidebar-brand { padding: 22px 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .brand-logo { display: flex; align-items: center; gap: 10px; }
+        .brand-icon { width: 36px; height: 36px; background: var(--blue); border-radius: 9px; display: grid; place-items: center; color: white; font-size: 16px; flex-shrink: 0; }
+        .brand-name { font-size: 0.95rem; font-weight: 800; color: white; line-height: 1.1; }
+        .brand-sub { font-size: 0.65rem; color: rgba(255,255,255,0.45); font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; }
+        .sidebar-nav { flex: 1; overflow-y: auto; padding: 14px 10px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent; }
+        .nav-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.3); padding: 12px 10px 6px; }
+        .nav-btn { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 9px; cursor: pointer; color: rgba(255,255,255,0.6); font-size: 0.83rem; font-weight: 500; transition: all 0.18s; border: none; background: transparent; width: 100%; text-align: left; font-family: inherit; }
+        .nav-btn i { width: 18px; font-size: 0.9rem; flex-shrink: 0; }
+        .nav-btn:hover { background: rgba(255,255,255,0.07); color: white; }
+        .nav-btn.active { background: var(--blue); color: white; box-shadow: 0 2px 12px rgba(26,86,219,0.4); }
+        .dept-toggle { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; cursor: pointer; color: rgba(255,255,255,0.35); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; transition: color 0.15s; }
+        .dept-toggle:hover { color: rgba(255,255,255,0.6); }
+        .dept-list { list-style: none; overflow: hidden; transition: max-height 0.3s ease; max-height: 500px; }
+        .dept-list.collapsed { max-height: 0; }
+        .dept-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px 8px 22px; border-radius: 8px; cursor: pointer; color: rgba(255,255,255,0.55); font-size: 0.8rem; font-weight: 500; transition: all 0.15s; }
+        .dept-item:hover { background: rgba(255,255,255,0.06); color: white; }
+        .dept-item.active { background: rgba(59,130,246,0.2); color: var(--blue-light); border-left: 2px solid var(--blue-light); }
+        .dept-count { font-size: 0.65rem; background: rgba(255,255,255,0.12); padding: 1px 7px; border-radius: 20px; font-weight: 600; }
+        .sidebar-footer { padding: 14px 10px; border-top: 1px solid rgba(255,255,255,0.08); }
 
-        body {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        /* ── MAIN ── */
+        .main { margin-left: var(--sidebar-w); min-height: 100vh; padding: 24px; }
 
-        /* Sidebar Styles */
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: var(--sidebar-width);
-            height: 100vh;
-            background: white;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            overflow-y: auto;
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
+        /* ── TOPBAR ── */
+        .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+        .topbar-left h1 { font-size: 1.5rem; font-weight: 800; color: var(--text); line-height: 1.2; }
+        .topbar-left p { font-size: 0.82rem; color: var(--text-muted); margin-top: 2px; }
+        .topbar-right { display: flex; gap: 10px; align-items: center; }
 
-        .sidebar-header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            padding: 25px 20px;
-            text-align: center;
-            color: white;
-        }
+        /* ── PANELS ── */
+        .panel { display: none; }
+        .panel.active { display: block; }
 
-        .sidebar-header h3 {
-            margin: 0;
-            font-size: 1.3rem;
-            font-weight: 700;
-        }
+        /* ── STAT CARDS ── */
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+        .stat-card { background: var(--surface); border-radius: var(--radius); padding: 18px 20px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 14px; transition: transform 0.18s, box-shadow 0.18s; cursor: pointer; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+        .stat-icon { width: 46px; height: 46px; border-radius: 11px; display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0; }
+        .stat-icon.blue { background: #eff6ff; color: var(--blue); }
+        .stat-icon.green { background: #ecfdf5; color: var(--green); }
+        .stat-icon.amber { background: #fffbeb; color: var(--accent); }
+        .stat-icon.red { background: #fef2f2; color: var(--red); }
+        .stat-icon.purple { background: #f5f3ff; color: var(--purple); }
+        .stat-number { font-size: 1.6rem; font-weight: 800; color: var(--text); line-height: 1; }
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; font-weight: 500; }
 
-        .sidebar-header p {
-            margin: 10px 0 0;
-            font-size: 0.8rem;
-            opacity: 0.9;
-        }
+        /* ── CARD ── */
+        .card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+        .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .card-title { font-size: 0.92rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+        .card-body { padding: 20px; }
 
-        .sidebar-menu {
-            padding: 20px 0;
-        }
+        /* ── DASHBOARD GRID LAYOUT ── */
+        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .dash-grid.three-col { grid-template-columns: 1fr 1fr 1fr; }
+        .dash-grid.full { grid-template-columns: 1fr; }
+        .span-full { grid-column: 1 / -1; }
 
-        .menu-item {
-            padding: 12px 25px;
-            margin: 5px 15px;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: #666;
-            font-weight: 500;
-        }
+        /* ── DEPT GRID ── */
+        .dept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; padding: 16px; }
+        .dept-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; cursor: pointer; transition: all 0.18s; position: relative; overflow: hidden; }
+        .dept-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--blue); border-radius: 3px 0 0 3px; }
+        .dept-card:hover { border-color: var(--blue-light); box-shadow: var(--shadow); transform: translateY(-2px); }
+        .dept-card-name { font-size: 0.9rem; font-weight: 700; margin-bottom: 8px; }
+        .dept-card-meta { display: flex; gap: 14px; font-size: 0.74rem; color: var(--text-muted); }
+        .dept-card-meta span { display: flex; align-items: center; gap: 4px; }
 
-        .menu-item i {
-            width: 24px;
-            font-size: 1.2rem;
-        }
+        /* ── SHIFT CARDS (inside dashboard) ── */
+        .shift-cards-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+        .shift-card { border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+        .shift-card-header { padding: 14px 16px 10px; display: flex; align-items: center; gap: 8px; }
+        .shift-card-header.morning { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-bottom: 1px solid #fde68a; }
+        .shift-card-header.evening { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-bottom: 1px solid #bfdbfe; }
+        .shift-card-header.night   { background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border-bottom: 1px solid #ddd6fe; }
+        .shift-card-title { font-size: 0.88rem; font-weight: 700; }
+        .shift-card-title.morning { color: #92400e; }
+        .shift-card-title.evening { color: #1e3a8a; }
+        .shift-card-title.night   { color: #4c1d95; }
+        .shift-card-time { font-size: 0.67rem; color: var(--text-muted); margin-top: 1px; }
+        .shift-card-count { margin-left: auto; font-size: 1.1rem; font-weight: 800; }
+        .shift-card-count.morning { color: #d97706; }
+        .shift-card-count.evening { color: #2563eb; }
+        .shift-card-count.night   { color: #6d28d9; }
+        .shift-staff-list { padding: 8px 0; max-height: 200px; overflow-y: auto; }
+        .shift-staff-row { display: flex; align-items: center; gap: 9px; padding: 6px 14px; transition: background 0.12s; }
+        .shift-staff-row:hover { background: var(--surface-2); }
+        .shift-avatar { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 0.62rem; font-weight: 800; flex-shrink: 0; }
+        .shift-avatar.morning { background: #fde68a; color: #78350f; }
+        .shift-avatar.evening { background: #bfdbfe; color: #1e3a8a; }
+        .shift-avatar.night   { background: #ddd6fe; color: #4c1d95; }
+        .shift-staff-name { font-size: 0.79rem; font-weight: 600; color: var(--text); }
+        .shift-staff-sub  { font-size: 0.67rem; color: var(--text-muted); }
+        .shift-no-staff { padding: 14px; text-align: center; font-size: 0.74rem; color: var(--text-light); font-style: italic; }
 
-        .menu-item:hover {
-            background: rgba(102,126,234,0.1);
-            color: var(--primary);
-            transform: translateX(5px);
-        }
+        /* ── ATTENDANCE MINI ── */
+        .att-mini-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+        .att-mini-row:last-child { border-bottom: none; }
+        .att-mini-name { flex: 1; font-size: 0.8rem; font-weight: 600; }
+        .att-mini-shift { font-size: 0.68rem; color: var(--text-muted); }
+        .att-dots { display: flex; gap: 3px; }
+        .att-dot { width: 20px; height: 20px; border-radius: 4px; display: grid; place-items: center; font-size: 0.58rem; font-weight: 700; color: white; }
+        .att-dot.p { background: var(--green); }
+        .att-dot.a { background: var(--red); }
+        .att-dot.l { background: var(--accent); }
+        .att-dot.o { background: #cbd5e1; color: #64748b; }
+        .att-mini-ot { font-size: 0.72rem; font-weight: 700; color: var(--accent); min-width: 30px; text-align: right; }
 
-        .menu-item.active {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            box-shadow: 0 5px 15px rgba(102,126,234,0.3);
-        }
+        /* ── TABLE ── */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        thead th { background: var(--surface-2); padding: 10px 14px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); border-bottom: 1px solid var(--border); white-space: nowrap; text-align: left; }
+        tbody td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: top; font-size: 0.82rem; }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background: #fafbff; }
 
-        .menu-badge {
-            margin-left: auto;
-            background: rgba(255,255,255,0.2);
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
+        /* ── BADGES ── */
+        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+        .badge-morning { background: #fef9c3; color: #854d0e; }
+        .badge-evening { background: #dbeafe; color: #1e40af; }
+        .badge-night   { background: #ede9fe; color: #5b21b6; }
+        .badge-unassigned { background: #f1f5f9; color: var(--text-muted); }
+        .badge-pending   { background: #fef2f2; color: #b91c1c; }
+        .badge-completed { background: #ecfdf5; color: #065f46; }
+        .badge-role { background: #f0f9ff; color: #0369a1; font-size: 0.68rem; padding: 2px 8px; }
 
-        .menu-item.active .menu-badge {
-            background: rgba(255,255,255,0.3);
-        }
+        /* ── TASKS ── */
+        .task-pill { display: flex; align-items: flex-start; gap: 8px; padding: 7px 9px; background: var(--surface-2); border-radius: 8px; margin-bottom: 5px; border-left: 3px solid var(--accent); }
+        .task-pill-body { flex: 1; min-width: 0; }
+        .task-pill-title { font-weight: 600; font-size: 0.78rem; color: var(--text); }
+        .task-pill-date { font-size: 0.67rem; color: var(--text-light); margin-top: 2px; }
+        .btn-complete { background: var(--green); color: white; border: none; padding: 2px 9px; border-radius: 20px; font-size: 0.63rem; font-weight: 600; cursor: pointer; white-space: nowrap; margin-top: 3px; transition: background 0.15s; font-family: inherit; }
+        .btn-complete:hover { background: #059669; }
+        .btn-complete:disabled { background: #94a3b8; cursor: not-allowed; }
+        .no-tasks { color: var(--text-light); font-size: 0.76rem; font-style: italic; }
+        .completed-note { font-size: 0.7rem; color: var(--green); margin-top: 3px; display: flex; align-items: center; gap: 4px; }
 
-        /* Main Content */
-        .main-content {
-            margin-left: var(--sidebar-width);
-            padding: 2rem;
-            min-height: 100vh;
-        }
+        /* ── RECENT TASKS MINI ── */
+        .task-mini { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f1f5f9; }
+        .task-mini:last-child { border-bottom: none; }
+        .task-mini-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+        .task-mini-dot.pending { background: var(--accent); }
+        .task-mini-dot.completed { background: var(--green); }
+        .task-mini-body { flex: 1; min-width: 0; }
+        .task-mini-title { font-size: 0.8rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .task-mini-meta { font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
+        .task-mini-status { flex-shrink: 0; }
 
-        /* Header Card */
-        .header-card {
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            margin-bottom: 30px;
-        }
+        /* ── OVERTIME BAR ── */
+        .ot-bar-bg { height: 4px; background: #e2e8f0; border-radius: 2px; margin-top: 3px; }
+        .ot-bar-fill { height: 4px; border-radius: 2px; background: linear-gradient(90deg, var(--green), var(--accent)); }
 
-        .header-gradient {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            padding: 30px;
-        }
+        /* ── BUTTONS ── */
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.18s; font-family: inherit; }
+        .btn-primary { background: var(--blue); color: white; }
+        .btn-primary:hover { background: #1d4ed8; box-shadow: 0 2px 12px rgba(26,86,219,0.35); }
+        .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+        .btn-outline:hover { background: var(--surface-2); }
+        .btn-ghost { background: transparent; color: var(--text-muted); border: none; padding: 6px 10px; font-size: 0.78rem; border-radius: 7px; }
+        .btn-ghost:hover { background: var(--surface-2); color: var(--blue); }
+        .btn-sm { padding: 5px 12px; font-size: 0.74rem; }
 
-        .header-gradient h2 {
-            margin: 0;
-            font-weight: 700;
-        }
+        /* ── FORMS ── */
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+        .form-control { width: 100%; padding: 9px 13px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.83rem; font-family: inherit; color: var(--text); background: var(--surface); transition: border-color 0.15s, box-shadow 0.15s; outline: none; }
+        .form-control:focus { border-color: var(--blue-light); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+        .form-grid .span-2 { grid-column: span 2; }
+        .form-hint { font-size: 0.69rem; color: var(--text-muted); margin-top: 4px; }
 
-        .header-gradient p {
-            margin: 10px 0 0;
-            opacity: 0.9;
-        }
+        /* ── MODAL ── */
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 200; display: none; place-items: center; }
+        .modal-backdrop.open { display: grid; }
+        .modal { background: var(--surface); border-radius: 16px; width: 100%; max-width: 480px; box-shadow: var(--shadow-lg); animation: modalIn 0.2s ease; }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .modal-header { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .modal-title { font-size: 1rem; font-weight: 700; }
+        .modal-close { width: 30px; height: 30px; border: none; background: var(--surface-2); border-radius: 8px; cursor: pointer; font-size: 1rem; color: var(--text-muted); display: grid; place-items: center; transition: background 0.15s; }
+        .modal-close:hover { background: #fee2e2; color: var(--red); }
+        .modal-body { padding: 22px; }
+        .modal-footer { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
 
-        /* Stats Cards */
-        .stat-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            transition: transform 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            cursor: pointer;
-        }
+        /* ── SECTION DIVIDER ── */
+        .section-sep { display: flex; align-items: center; gap: 10px; margin: 22px 0 16px; }
+        .section-sep-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); white-space: nowrap; }
+        .section-sep-line { flex: 1; height: 1px; background: var(--border); }
 
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
+        /* ── TOAST ── */
+        .toast-stack { position: fixed; top: 20px; right: 20px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+        .toast { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 10px; font-size: 0.82rem; font-weight: 500; min-width: 260px; box-shadow: var(--shadow-lg); animation: toastIn 0.25s ease; font-family: inherit; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+        .toast.success { background: var(--green); color: white; }
+        .toast.error   { background: var(--red);   color: white; }
+        .toast.info    { background: var(--blue);  color: white; }
+        .toast.warning { background: var(--accent);color: white; }
 
-        .stat-card i {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
+        /* ── EMPTY ── */
+        .empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+        .empty i { font-size: 2.2rem; margin-bottom: 12px; opacity: 0.28; display: block; }
+        .empty p { font-size: 0.83rem; }
 
-        .stat-card .stat-number {
-            font-size: 2rem;
-            font-weight: 700;
-            margin: 10px 0;
-        }
+        /* ── SPINNER ── */
+        .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        .stat-card .stat-label {
-            color: #666;
-            font-size: 0.9rem;
-        }
+        /* ── TAB BAR ── */
+        .tab-bar { display: flex; gap: 2px; background: var(--surface-2); border-radius: 8px; padding: 3px; width: fit-content; }
+        .tab-btn { padding: 6px 14px; border-radius: 6px; border: none; background: transparent; font-size: 0.78rem; font-weight: 600; cursor: pointer; color: var(--text-muted); transition: all 0.15s; font-family: inherit; }
+        .tab-btn.active { background: var(--surface); color: var(--blue); box-shadow: var(--shadow-sm); }
 
-        /* Tab Content Panels */
-        .tab-panel {
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
+        /* ── QUICK MARK ── */
+        .quick-mark-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+        .quick-mark-row:last-child { border-bottom: none; }
+        .qm-name { font-size: 0.8rem; font-weight: 600; flex: 1; min-width: 90px; }
+        .qm-shift { font-size: 0.67rem; color: var(--text-muted); }
+        .qm-btns { display: flex; gap: 4px; }
+        .qm-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: transparent; cursor: pointer; font-size: 0.7rem; font-weight: 700; transition: all 0.14s; font-family: inherit; }
+        .qm-btn:hover { transform: scale(1.08); }
+        .qm-btn.p { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+        .qm-btn.a { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+        .qm-btn.l { background: #fffbeb; color: #854d0e; border-color: #fde68a; }
+        .qm-btn.active-mark { box-shadow: 0 0 0 2px currentColor; opacity: 1 !important; }
+        .qm-ot { width: 52px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.75rem; font-family: inherit; text-align: center; }
 
-        .tab-panel.active {
-            display: block;
-        }
+        /* ── MOBILE ── */
+        .menu-btn { display: none; position: fixed; top: 14px; left: 14px; z-index: 150; background: var(--navy); color: white; border: none; width: 38px; height: 38px; border-radius: 9px; font-size: 1rem; cursor: pointer; }
 
-        .main-card {
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
+        @media (max-width: 1100px) { .dash-grid { grid-template-columns: 1fr; } .shift-cards-row { grid-template-columns: 1fr; } }
+        @media (max-width: 900px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; padding: 16px; padding-top: 60px; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .menu-btn { display: grid; place-items: center; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-grid .span-2 { grid-column: span 1; }
         }
-
-        .card-header-custom {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            padding: 15px 20px;
-            font-weight: 600;
-        }
-
-        .card-header-custom i {
-            margin-right: 10px;
-        }
-
-        .card-body-custom {
-            padding: 20px;
-        }
-
-        .form-control, .form-select {
-            border-radius: 10px;
-            border: 2px solid #e0e0e0;
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 0.2rem rgba(102,126,234,0.25);
-        }
-
-        .btn-primary-custom {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 10px;
-            color: white;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary-custom:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
-        }
-
-        .table-custom {
-            margin-bottom: 0;
-        }
-
-        .table-custom thead th {
-            background: #f8f9fa;
-            border-bottom: 2px solid var(--primary);
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .badge-role {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .badge-manager { background: #ffc107; color: #856404; }
-        .badge-staff { background: #17a2b8; color: white; }
-        .badge-housekeeping { background: #28a745; color: white; }
-        .badge-reception { background: #fd7e14; color: white; }
-        .badge-supervisor { background: #6f42c1; color: white; }
-
-        .task-item {
-            background: #f8f9fa;
-            border-left: 4px solid var(--primary);
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .task-item:hover {
-            transform: translateX(5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .task-title {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: var(--dark);
-        }
-
-        .task-description {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .task-meta {
-            font-size: 0.8rem;
-            color: #999;
-            margin-top: 8px;
-        }
-
-        .task-status {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
-
-        .status-pending { background: #ffc107; color: #856404; }
-        .status-completed { background: #28a745; color: white; }
-        .status-in-progress { background: #17a2b8; color: white; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            .main-content {
-                margin-left: 0;
-                padding: 1rem;
-            }
-            .menu-toggle {
-                display: block;
-                position: fixed;
-                top: 20px;
-                left: 20px;
-                z-index: 1100;
-                background: white;
-                border: none;
-                border-radius: 10px;
-                padding: 10px;
-                cursor: pointer;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            }
-        }
-
-        @media (min-width: 769px) {
-            .menu-toggle {
-                display: none;
-            }
-        }
-
-        .menu-toggle {
-            display: none;
-        }
-
-        .back-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: white;
-            border-radius: 50px;
-            padding: 12px 24px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            text-decoration: none;
-            color: var(--primary);
-            font-weight: 600;
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .back-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-            color: var(--secondary);
-        }
-
-        .back-btn i {
-            margin-right: 8px;
-        }
-
-        .toast-notify {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            min-width: 280px;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 5px;
-        }
-        
-        .btn-sm-action {
-            padding: 4px 8px;
-            font-size: 0.75rem;
-        }
-        
-        .email-display {
-            font-size: 0.85rem;
-            color: #666;
-        }
-        
-        .staff-count-badge {
-            font-size: 0.9rem;
-            padding: 5px 10px;
-        }
+        @media (max-width: 560px) { .stats-row { grid-template-columns: 1fr 1fr; } }
     </style>
 </head>
 <body>
+<button class="menu-btn" id="menuBtn"><i class="fas fa-bars"></i></button>
 
-<button class="menu-toggle" onclick="toggleSidebar()">
-    <i class="fas fa-bars"></i>
-</button>
-
-<!-- Sidebar Navigation -->
-<div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-        <h3><i class="fas fa-hotel"></i> Hotel Staff</h3>
-        <p>Management System</p>
+<!-- ════════ SIDEBAR ════════ -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-logo">
+            <div class="brand-icon"><i class="fas fa-hotel"></i></div>
+            <div>
+                <div class="brand-name">Hotel ERP</div>
+                <div class="brand-sub">Staff Management</div>
+            </div>
+        </div>
     </div>
-    <div class="sidebar-menu">
-        <div class="menu-item active" data-tab="departments">
-            <i class="fas fa-building"></i>
-            <span>Departments</span>
-            <span class="menu-badge" id="sidebarDeptBadge">0</span>
+    <nav class="sidebar-nav">
+        <div class="nav-label">Main</div>
+        <button class="nav-btn active" data-panel="overview"><i class="fas fa-chart-pie"></i> Dashboard Overview</button>
+        <button class="nav-btn" data-panel="add-staff"><i class="fas fa-user-plus"></i> Add Staff Member</button>
+        <div style="margin-top:4px;">
+            <div class="dept-toggle" id="deptToggle">
+                <span><i class="fas fa-building" style="margin-right:6px;"></i>Departments</span>
+                <i class="fas fa-chevron-down" id="deptChevron"></i>
+            </div>
+            <ul class="dept-list" id="deptList">
+                <li style="padding:8px 22px;font-size:0.75rem;color:rgba(255,255,255,0.25);">Loading…</li>
+            </ul>
         </div>
-        <div class="menu-item" data-tab="staff">
-            <i class="fas fa-users"></i>
-            <span>Staff Members</span>
-            <span class="menu-badge" id="sidebarStaffBadge">0</span>
+        <div class="nav-label" style="margin-top:8px;">Setup</div>
+        <button class="nav-btn" data-panel="add-dept"><i class="fas fa-plus-circle"></i> Add Department</button>
+    </nav>
+    <div class="sidebar-footer">
+        <div style="font-size:0.7rem;color:rgba(255,255,255,0.25);text-align:center;">Hotel ERP &amp; CMS v2.0</div>
+    </div>
+</aside>
+
+<!-- ════════ MAIN ════════ -->
+<main class="main">
+
+    <!-- ══════════════════════════════════════
+         OVERVIEW PANEL — everything is here
+    ══════════════════════════════════════════ -->
+    <div class="panel active" id="panel-overview">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1>Staff Dashboard</h1>
+                <p>Departments · Shifts · Attendance · Tasks — all in one view</p>
+            </div>
+            <div class="topbar-right">
+                <button class="btn btn-outline btn-sm" onclick="openModal('markAttModal')"><i class="fas fa-calendar-check"></i> Mark Attendance</button>
+                <button class="btn btn-primary" onclick="switchPanel('add-staff')"><i class="fas fa-user-plus"></i> Add Staff</button>
+            </div>
         </div>
-        <div class="menu-item" data-tab="tasks">
-            <i class="fas fa-tasks"></i>
-            <span>Tasks Management</span>
-            <span class="menu-badge" id="sidebarTasksBadge">0</span>
+
+        <!-- ── STAT CARDS ── -->
+        <div class="stats-row" id="statsRow">
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-building"></i></div>
+                <div><div class="stat-number" id="stat-depts">0</div><div class="stat-label">Departments</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-users"></i></div>
+                <div><div class="stat-number" id="stat-staff">0</div><div class="stat-label">Staff Members</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon amber"><i class="fas fa-clock"></i></div>
+                <div><div class="stat-number" id="stat-pending">0</div><div class="stat-label">Pending Tasks</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon red"><i class="fas fa-check-double"></i></div>
+                <div><div class="stat-number" id="stat-completed">0</div><div class="stat-label">Completed Tasks</div></div>
+            </div>
+        </div>
+
+        <!-- ── SECTION: SHIFT OVERVIEW ── -->
+        <div class="section-sep">
+            <div class="section-sep-label"><i class="fas fa-clock" style="margin-right:5px;"></i>Today's Shift Overview</div>
+            <div class="section-sep-line"></div>
+        </div>
+
+        <div class="shift-cards-row" id="shiftCardsRow">
+            <!-- Rendered by JS -->
+        </div>
+
+        <!-- ── SECTION: DEPARTMENTS + ATTENDANCE SIDE BY SIDE ── -->
+        <div class="section-sep" style="margin-top:24px;">
+            <div class="section-sep-label"><i class="fas fa-building" style="margin-right:5px;"></i>Departments</div>
+            <div class="section-sep-line"></div>
+            <button class="btn btn-sm btn-outline" onclick="switchPanel('add-dept')" style="white-space:nowrap;"><i class="fas fa-plus"></i> New</button>
+        </div>
+
+        <div class="dash-grid">
+            <!-- Departments card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><i class="fas fa-building" style="color:var(--blue)"></i> All Departments</div>
+                </div>
+                <div id="deptGrid" class="dept-grid" style="padding:14px;">
+                    <div class="empty"><i class="fas fa-building"></i><p>No departments yet</p></div>
+                </div>
+            </div>
+
+            <!-- Attendance quick panel -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><i class="fas fa-calendar-check" style="color:var(--blue)"></i> Today's Attendance</div>
+                    <div class="tab-bar" id="attTabBar">
+                        <button class="tab-btn active" onclick="setAttTab('all',this)">All</button>
+                        <button class="tab-btn" onclick="setAttTab('Morning',this)">☀ Morning</button>
+                        <button class="tab-btn" onclick="setAttTab('Evening',this)">🌤 Evening</button>
+                        <button class="tab-btn" onclick="setAttTab('Night',this)">🌙 Night</button>
+                    </div>
+                </div>
+                <div class="card-body" style="padding:14px 18px; max-height:360px; overflow-y:auto;" id="attMiniBody">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ── SECTION: RECENT TASKS ── -->
+        <div class="section-sep" style="margin-top:4px;">
+            <div class="section-sep-label"><i class="fas fa-tasks" style="margin-right:5px;"></i>Recent Tasks</div>
+            <div class="section-sep-line"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-tasks" style="color:var(--blue)"></i> All Assigned Tasks</div>
+                <div style="display:flex;gap:8px;">
+                    <select class="form-control" id="taskFilterSel" style="width:140px;padding:5px 10px;font-size:0.78rem;" onchange="renderRecentTasks()">
+                        <option value="">All Tasks</option>
+                        <option value="pending">Pending</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr>
+                        <th>Task</th><th>Assigned To</th><th>Department</th><th>Shift</th><th>Date</th><th>Status</th><th>Action</th>
+                    </tr></thead>
+                    <tbody id="recentTasksBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div><!-- /panel-overview -->
+
+    <!-- ══ DEPARTMENT PANEL ══ -->
+    <div class="panel" id="panel-dept">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1 id="deptPanelTitle">Department</h1>
+                <p id="deptPanelMeta">—</p>
+            </div>
+            <div class="topbar-right">
+                <button class="btn btn-outline btn-sm" onclick="switchPanel('overview')"><i class="fas fa-arrow-left"></i> Back</button>
+                <button class="btn btn-primary btn-sm" id="deptAddStaffBtn"><i class="fas fa-user-plus"></i> Add Staff</button>
+            </div>
+        </div>
+
+        <!-- Shift mini summary for this dept -->
+        <div class="shift-cards-row" id="deptShiftRow" style="margin-bottom:20px;"></div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-users" style="color:var(--blue)"></i> Staff Members</div>
+                <div class="tab-bar">
+                    <button class="tab-btn active" id="dTabAll"     onclick="setDeptTab('all')">All</button>
+                    <button class="tab-btn"         id="dTabMorning" onclick="setDeptTab('Morning')">☀ Morning</button>
+                    <button class="tab-btn"         id="dTabEvening" onclick="setDeptTab('Evening')">🌤 Evening</button>
+                    <button class="tab-btn"         id="dTabNight"   onclick="setDeptTab('Night')">🌙 Night</button>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Staff</th><th>Role</th><th>Shift</th><th>Assigned Tasks</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="staffTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ ADD DEPT PANEL (MODIFIED: DROPDOWN INSTEAD OF TEXT INPUT) ══ -->
+    <div class="panel" id="panel-add-dept">
+        <div class="topbar"><div class="topbar-left"><h1>New Department</h1><p>Create a department to organize staff</p></div></div>
+        <div class="card" style="max-width:520px;">
+            <div class="card-header"><div class="card-title"><i class="fas fa-building" style="color:var(--blue)"></i> Department Details</div></div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">Department Name *</label>
+                    <select class="form-control" id="newDeptName">
+                        <option value="">-- Select Department --</option>
+                        <option value="Housekeeping">Housekeeping</option>
+                        <option value="HR">HR</option>
+                        <option value="Front Desk">Front Desk</option>
+                        <option value="Accountant">Accountant</option>
+                        <option value="Restaurant">Restaurant</option>
+                        <option value="Maintenance">Maintenance</option>
+                        <option value="Security">Security</option>
+                        <option value="Sales">Sales</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" id="createDeptBtn"><i class="fas fa-plus-circle"></i> Create Department</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ ADD STAFF PANEL ══ -->
+    <div class="panel" id="panel-add-staff">
+        <div class="topbar"><div class="topbar-left"><h1>Add Staff Member</h1><p>Register a new employee and assign department &amp; shift</p></div></div>
+        <div class="card" style="max-width:680px;">
+            <div class="card-header"><div class="card-title"><i class="fas fa-user-plus" style="color:var(--blue)"></i> Staff Information</div></div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Full Name *</label>
+                        <input class="form-control" id="sName" placeholder="Full name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input class="form-control" type="email" id="sEmail" placeholder="staff@hotel.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone</label>
+                        <input class="form-control" id="sPhone" placeholder="+91 9876543210">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Department *</label>
+                        <select class="form-control" id="sDept"><option value="">Select department</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Role / Designation</label>
+                        <select class="form-control" id="sRole">
+                            <option value="Staff">Staff</option>
+                            <option value="Supervisor">Supervisor</option>
+                            <option value="Manager">Manager</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Shift Assignment</label>
+                        <select class="form-control" id="sShift">
+                            <option value="">No shift assigned</option>
+                            <option value="Morning">☀ Morning (6am – 2pm)</option>
+                            <option value="Evening">🌤 Evening (2pm – 10pm)</option>
+                            <option value="Night">🌙 Night (10pm – 6am)</option>
+                        </select>
+                        <div class="form-hint">Access and task visibility based on shift</div>
+                    </div>
+                    <div class="form-group span-2">
+                        <label class="form-label">Password</label>
+                        <input class="form-control" type="password" id="sPass" placeholder="Login password for staff portal">
+                    </div>
+                </div>
+                <button class="btn btn-primary" id="addStaffBtn"><i class="fas fa-user-plus"></i> Add Staff Member</button>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- ══ TASK MODAL ══ -->
+<div class="modal-backdrop" id="taskModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title"><i class="fas fa-tasks" style="color:var(--blue);margin-right:6px;"></i>Assign Task</span>
+            <button class="modal-close" onclick="closeModal('taskModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="taskStaffId">
+            <div class="form-group">
+                <label class="form-label">Task Title *</label>
+                <input class="form-control" id="taskTitle" placeholder="e.g. Clean Room 405, Prepare meeting room">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" id="taskDesc" rows="3" placeholder="Optional details…"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('taskModal')">Cancel</button>
+            <button class="btn btn-primary" id="confirmTaskBtn"><i class="fas fa-check"></i> Assign Task</button>
         </div>
     </div>
 </div>
 
-<!-- Main Content -->
-<div class="main-content">
-    <!-- Header -->
-    <div class="header-card">
-        <div class="header-gradient">
-            <h2><i class="fas fa-users"></i> Staff Management System</h2>
-            <p><i class="fas fa-user-tie"></i> Manage departments, staff members, and assign tasks efficiently</p>
+<!-- ══ SHIFT MODAL ══ -->
+<div class="modal-backdrop" id="shiftModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title"><i class="fas fa-clock" style="color:var(--blue);margin-right:6px;"></i>Update Shift</span>
+            <button class="modal-close" onclick="closeModal('shiftModal')"><i class="fas fa-times"></i></button>
         </div>
-    </div>
-
-    <!-- Stats Row -->
-    <div class="row mb-4">
-        <div class="col-md-4 mb-3">
-            <div class="stat-card" onclick="switchToTab('departments')">
-                <i class="fas fa-building" style="color: var(--primary);"></i>
-                <div class="stat-number" id="totalDepartments">0</div>
-                <div class="stat-label">Total Departments</div>
-                <small class="text-muted">Click to view</small>
+        <div class="modal-body">
+            <input type="hidden" id="shiftStaffId">
+            <div class="form-group">
+                <label class="form-label">Staff Member</label>
+                <div id="shiftStaffName" style="font-weight:700;font-size:0.9rem;padding:6px 0;"></div>
             </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="stat-card" onclick="switchToTab('staff')">
-                <i class="fas fa-users" style="color: var(--success);"></i>
-                <div class="stat-number" id="totalStaff">0</div>
-                <div class="stat-label">Staff Members</div>
-                <small class="text-muted">Click to view</small>
+            <div class="form-group">
+                <label class="form-label">Select Shift</label>
+                <select class="form-control" id="shiftSelect">
+                    <option value="Morning">☀ Morning (6am – 2pm)</option>
+                    <option value="Evening">🌤 Evening (2pm – 10pm)</option>
+                    <option value="Night">🌙 Night (10pm – 6am)</option>
+                </select>
             </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="stat-card" onclick="switchToTab('tasks')">
-                <i class="fas fa-tasks" style="color: var(--warning);"></i>
-                <div class="stat-number" id="totalTasks">0</div>
-                <div class="stat-label">Active Tasks</div>
-                <small class="text-muted">Click to view</small>
+            <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Overtime Hours</label>
+                <input type="number" class="form-control" id="otHours" min="0" max="8" step="0.5" value="0">
+                <div class="form-hint">Max 8 hours overtime per shift</div>
             </div>
         </div>
-    </div>
-
-    <!-- Departments Tab Panel -->
-    <div id="departmentsPanel" class="tab-panel active">
-        <div class="row">
-            <div class="col-lg-5 mb-4">
-                <div class="main-card">
-                    <div class="card-header-custom">
-                        <i class="fas fa-plus-circle"></i> Create New Department
-                    </div>
-                    <div class="card-body-custom">
-                        <form id="addDepartmentForm">
-                            <div class="mb-3">
-                                <label class="form-label">Department Name</label>
-                                <input type="text" class="form-control" id="deptName" required placeholder="e.g., Housekeeping, Front Desk, Kitchen">
-                            </div>
-                            <button type="submit" class="btn btn-primary-custom w-100">
-                                <i class="fas fa-save"></i> Create Department
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-7 mb-4">
-                <div class="main-card">
-                    <div class="card-header-custom">
-                        <i class="fas fa-list"></i> All Departments
-                    </div>
-                    <div class="card-body-custom">
-                        <div class="table-responsive">
-                            <table class="table table-custom">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Department Name</th>
-                                        <th>Staff Count</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="departmentsList">
-                                    <tr>
-                                        <td colspan="4" class="text-center">Loading departments...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Staff Members Tab Panel -->
-    <div id="staffPanel" class="tab-panel">
-        <div class="row">
-            <div class="col-lg-5 mb-4">
-                <div class="main-card">
-                    <div class="card-header-custom">
-                        <i class="fas fa-user-plus"></i> Add New Staff Member
-                    </div>
-                    <div class="card-body-custom">
-                        <form id="addStaffForm">
-                            <div class="mb-3">
-                                <label class="form-label">Full Name</label>
-                                <input type="text" class="form-control" id="staffName" required placeholder="e.g., John Doe">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Email Address</label>
-                                <input type="email" class="form-control" id="staffEmail" required placeholder="john@example.com">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" id="staffPhone" placeholder="+1234567890">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Department</label>
-                                <select class="form-select" id="staffDepartment" required>
-                                    <option value="">Select Department</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Role</label>
-                                <select class="form-select" id="staffRole" required>
-                                    <option value="Staff">Staff Member</option>
-                                    <option value="Manager">Department Manager</option>
-                                    <option value="Housekeeping">Housekeeping Staff</option>
-                                    <option value="Reception">Receptionist</option>
-                                    <option value="Supervisor">Supervisor</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Password</label>
-                                <input type="password" class="form-control" id="staffPassword" required placeholder="••••••••">
-                            </div>
-                            <button type="submit" class="btn btn-primary-custom w-100">
-                                <i class="fas fa-user-check"></i> Add Staff Member
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-7 mb-4">
-                <div class="main-card">
-                    <div class="card-header-custom">
-                        <i class="fas fa-users"></i> Staff Directory
-                    </div>
-                    <div class="card-body-custom">
-                        <div class="table-responsive">
-                            <table class="table table-custom">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Department</th>
-                                        <th>Role</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="staffList">
-                                    <tr>
-                                        <td colspan="6" class="text-center">Loading staff members...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tasks Management Tab Panel -->
-    <div id="tasksPanel" class="tab-panel">
-        <div class="row">
-            <div class="col-lg-5 mb-4">
-                <div class="main-card">
-                    <div class="card-header-custom">
-                        <i class="fas fa-plus-circle"></i> Assign New Task
-                    </div>
-                    <div class="card-body-custom">
-                        <form id="assignTaskForm">
-                            <div class="mb-3">
-                                <label class="form-label">Assign To</label>
-                                <select class="form-select" id="taskStaff" required>
-                                    <option value="">Select Staff Member</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Task Title</label>
-                                <input type="text" class="form-control" id="taskTitle" required placeholder="e.g., Clean Room 101">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Description</label>
-                                <textarea class="form-control" id="taskDescription" rows="4" placeholder="Detailed description of the task..."></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary-custom w-100">
-                                <i class="fas fa-paper-plane"></i> Assign Task
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-7 mb-4">
-                <div class="main-card">
-                    <div class="card-header-custom">
-                        <i class="fas fa-list-check"></i> Active Tasks
-                    </div>
-                    <div class="card-body-custom" id="tasksList">
-                        <div class="text-center text-muted py-4">
-                            <i class="fas fa-inbox fa-3x mb-3"></i>
-                            <p>No tasks assigned yet</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('shiftModal')">Cancel</button>
+            <button class="btn btn-primary" id="confirmShiftBtn"><i class="fas fa-save"></i> Update Shift</button>
         </div>
     </div>
 </div>
 
-<a href="/dashboard/" class="back-btn">
-    <i class="fas fa-arrow-left"></i> Back to Dashboard
-</a>
+<!-- ══ MARK ATTENDANCE MODAL ══ -->
+<div class="modal-backdrop" id="markAttModal">
+    <div class="modal" style="max-width:500px;">
+        <div class="modal-header">
+            <span class="modal-title"><i class="fas fa-calendar-check" style="color:var(--blue);margin-right:6px;"></i>Mark Attendance</span>
+            <button class="modal-close" onclick="closeModal('markAttModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Staff Member *</label>
+                <select class="form-control" id="attStaffSel"><option value="">Choose…</option></select>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Date *</label>
+                    <input type="date" class="form-control" id="attDate">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-control" id="attStatus">
+                        <option value="P">Present</option>
+                        <option value="A">Absent</option>
+                        <option value="L">Late</option>
+                        <option value="O">Day Off</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">Overtime Hours</label>
+                <input type="number" class="form-control" id="attOT" min="0" max="8" step="0.5" value="0">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('markAttModal')">Cancel</button>
+            <button class="btn btn-primary" id="confirmAttBtn"><i class="fas fa-check"></i> Save Attendance</button>
+        </div>
+    </div>
+</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<div class="toast-stack" id="toastStack"></div>
+
 <script>
-    let departmentsData = [];
-    let staffData = [];
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let departments = [];
+let staffMembers = [];
+let tasks = [];
+let shifts = [];
+let attendance = [];
+let currentDeptId = null;
+let _deptTab = 'all';
+let _attTab = 'all';
 
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('open');
+const csrf = () =>
+    document.cookie.split('; ').find(r => r.startsWith('csrftoken='))?.split('=')[1] || '';
+
+// ─────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────
+function esc(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtDate(d) { if (!d) return '—'; try { return new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); } catch { return d; } }
+function initials(n) { return (n||'?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase(); }
+function toast(msg, type='success') {
+    const stack = document.getElementById('toastStack');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    const icons = {success:'fa-check-circle',error:'fa-exclamation-circle',info:'fa-info-circle',warning:'fa-exclamation-triangle'};
+    el.innerHTML = `<i class="fas ${icons[type]||icons.info}"></i> ${msg}`;
+    stack.appendChild(el);
+    setTimeout(() => el.remove(), 3500);
+}
+
+// ─────────────────────────────────────────────
+// MODAL
+// ─────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-backdrop').forEach(bd =>
+    bd.addEventListener('click', e => { if (e.target === bd) bd.classList.remove('open'); })
+);
+
+// ─────────────────────────────────────────────
+// FETCH
+// ─────────────────────────────────────────────
+async function fetchAll() {
+    const [d, s, t, sh, att] = await Promise.all([
+        fetch('/get-departments/').then(r=>r.json()).catch(()=>[]),
+        fetch('/get-staff/').then(r=>r.json()).catch(()=>[]),
+        fetch('/get-tasks/').then(r=>r.json()).catch(()=>({})),
+        fetch('/get-shifts/').then(r=>r.json()).catch(()=>[]),
+        fetch('/get-attendance/').then(r=>r.json()).catch(()=>[]),
+    ]);
+    departments = Array.isArray(d) ? d : [];
+    staffMembers = Array.isArray(s) ? s : [];
+    tasks = Array.isArray(t) ? t : (t.tasks||[]);
+    shifts = Array.isArray(sh) ? sh : [];
+    attendance = Array.isArray(att) ? att : [];
+}
+
+// ─────────────────────────────────────────────
+// PANEL SWITCHING
+// ─────────────────────────────────────────────
+function switchPanel(name, deptId = null) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.dept-item').forEach(d => d.classList.remove('active'));
+
+    const panelId = name === 'dept' ? 'panel-dept' : `panel-${name}`;
+    const panel = document.getElementById(panelId);
+    if (panel) panel.classList.add('active');
+    const navBtn = document.querySelector(`.nav-btn[data-panel="${name}"]`);
+    if (navBtn) navBtn.classList.add('active');
+
+    if (name === 'overview') {
+        currentDeptId = null;
+        refreshOverview();
+    } else if (name === 'add-staff') {
+        populateDeptSelect('sDept');
+        if (deptId) document.getElementById('sDept').value = deptId;
+    } else if (name === 'dept' && deptId) {
+        currentDeptId = deptId;
+        _deptTab = 'all';
+        ['All','Morning','Evening','Night'].forEach(t => {
+            const el = document.getElementById('dTab'+t);
+            if (el) el.classList.toggle('active', t==='All');
+        });
+        const item = document.querySelector(`.dept-item[data-id="${deptId}"]`);
+        if (item) item.classList.add('active');
+        renderDeptPanel();
     }
+}
 
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
+document.querySelectorAll('.nav-btn[data-panel]').forEach(btn =>
+    btn.addEventListener('click', () => switchPanel(btn.dataset.panel))
+);
+document.getElementById('menuBtn').addEventListener('click', () =>
+    document.getElementById('sidebar').classList.toggle('open')
+);
+document.getElementById('deptToggle').addEventListener('click', () => {
+    const list = document.getElementById('deptList');
+    const chev = document.getElementById('deptChevron');
+    list.classList.toggle('collapsed');
+    chev.className = list.classList.contains('collapsed') ? 'fas fa-chevron-right' : 'fas fa-chevron-down';
+});
+
+// ─────────────────────────────────────────────
+// SIDEBAR DEPT LIST
+// ─────────────────────────────────────────────
+function renderSidebarDepts() {
+    const ul = document.getElementById('deptList');
+    if (!departments.length) {
+        ul.innerHTML = '<li style="padding:8px 22px;font-size:0.75rem;color:rgba(255,255,255,0.25);">No departments</li>';
+        return;
     }
+    ul.innerHTML = departments.map(d => {
+        const cnt = staffMembers.filter(s => s.department_id === d.id).length;
+        return `<li class="dept-item${currentDeptId === d.id ? ' active' : ''}" data-id="${d.id}" onclick="switchPanel('dept',${d.id})">
+            <span>${esc(d.name)}</span><span class="dept-count">${cnt}</span></li>`;
+    }).join('');
+}
 
-    const csrftoken = getCookie('csrftoken');
+// ─────────────────────────────────────────────
+// REFRESH OVERVIEW — all sections
+// ─────────────────────────────────────────────
+async function refreshOverview() {
+    await fetchAll();
+    renderSidebarDepts();
 
-    function showToast(message, type = 'success') {
-        let toastContainer = document.getElementById('toastContainer');
-        if (!toastContainer) {
-            const div = document.createElement('div');
-            div.id = 'toastContainer';
-            div.className = 'toast-notify';
-            document.body.appendChild(div);
-            toastContainer = div;
+    // Stats
+    const pending   = tasks.filter(t => t.status !== 'completed').length;
+    const completed = tasks.filter(t => t.status === 'completed').length;
+    document.getElementById('stat-depts').textContent    = departments.length;
+    document.getElementById('stat-staff').textContent    = staffMembers.length;
+    document.getElementById('stat-pending').textContent   = pending;
+    document.getElementById('stat-completed').textContent = completed;
+
+    renderShiftCards('shiftCardsRow');
+    renderDeptGrid();
+    renderAttMini();
+    renderRecentTasks();
+}
+
+// ─────────────────────────────────────────────
+// SHIFT CARDS (used both in overview & dept panel)
+// ─────────────────────────────────────────────
+function renderShiftCards(containerId, filterDeptId = null) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const defs = [
+        { key:'Morning', label:'Morning', time:'6am – 2pm',   cls:'morning', icon:'fa-sun' },
+        { key:'Evening', label:'Evening', time:'2pm – 10pm',  cls:'evening', icon:'fa-cloud-sun' },
+        { key:'Night',   label:'Night',   time:'10pm – 6am',  cls:'night',   icon:'fa-moon' },
+    ];
+
+    container.innerHTML = defs.map(sd => {
+        let assigned = shifts.filter(sh => sh.shift === sd.key);
+        if (filterDeptId) {
+            const dStaffIds = new Set(staffMembers.filter(s => s.department_id === filterDeptId).map(s => s.id));
+            assigned = assigned.filter(sh => dStaffIds.has(sh.staff_id));
         }
-        
-        const toastId = 'toast-' + Date.now();
-        const bgClass = type === 'success' ? 'bg-success' : (type === 'error' ? 'bg-danger' : 'bg-info');
-        const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle');
-        
-        const toastHtml = `
-            <div id="${toastId}" class="toast align-items-center text-white ${bgClass} border-0 mb-2" role="alert" data-bs-autohide="true" data-bs-delay="4000">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        <i class="fas ${icon} me-2"></i>
-                        ${message}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+
+        const rows = assigned.map(sh => {
+            const st = staffMembers.find(s => s.id === sh.staff_id);
+            if (!st) return '';
+            const dept = departments.find(d => d.id === st.department_id);
+            return `<div class="shift-staff-row">
+                <div class="shift-avatar ${sd.cls}">${initials(st.name)}</div>
+                <div>
+                    <div class="shift-staff-name">${esc(st.name)}</div>
+                    <div class="shift-staff-sub">${esc(st.role||'Staff')}${dept&&!filterDeptId?' · '+esc(dept.name):''}</div>
                 </div>
+                <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="openShiftModal(${st.id},'${sd.key}','${esc(st.name)}')">
+                    <i class="fas fa-pen"></i>
+                </button>
+            </div>`;
+        }).join('');
+
+        return `<div class="shift-card">
+            <div class="shift-card-header ${sd.cls}">
+                <i class="fas ${sd.icon}" style="font-size:1rem;opacity:0.8;"></i>
+                <div>
+                    <div class="shift-card-title ${sd.cls}">${sd.label} Shift</div>
+                    <div class="shift-card-time">${sd.time}</div>
+                </div>
+                <div class="shift-card-count ${sd.cls}">${assigned.length}</div>
             </div>
-        `;
-        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-        const toastEl = document.getElementById(toastId);
-        const toast = new bootstrap.Toast(toastEl);
-        toast.show();
-        toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
-    }
+            <div class="shift-staff-list">
+                ${rows || `<div class="shift-no-staff">No staff assigned</div>`}
+            </div>
+        </div>`;
+    }).join('');
+}
 
-    function switchToTab(tabName) {
-        // Update sidebar menu items
-        document.querySelectorAll('.menu-item').forEach(item => {
-            item.classList.remove('active');
-            if (item.getAttribute('data-tab') === tabName) {
-                item.classList.add('active');
-            }
-        });
-        
-        // Update panels
-        document.querySelectorAll('.tab-panel').forEach(panel => {
-            panel.classList.remove('active');
-        });
-        document.getElementById(`${tabName}Panel`).classList.add('active');
-        
-        // Close sidebar on mobile after selection
-        if (window.innerWidth <= 768) {
-            document.getElementById('sidebar').classList.remove('open');
-        }
+// ─────────────────────────────────────────────
+// DEPT GRID (overview)
+// ─────────────────────────────────────────────
+function renderDeptGrid() {
+    const grid = document.getElementById('deptGrid');
+    if (!departments.length) {
+        grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><i class="fas fa-building"></i><p>No departments yet. Click "Add Department" to get started.</p></div>';
+        return;
     }
+    grid.innerHTML = departments.map(d => {
+        const dStaff = staffMembers.filter(s => s.department_id === d.id);
+        const activeTasks = tasks.filter(t => {
+            const st = staffMembers.find(s => s.id === t.staff_id);
+            return st && st.department_id === d.id && t.status !== 'completed';
+        }).length;
+        const mCnt = shifts.filter(sh => dStaff.some(s=>s.id===sh.staff_id) && sh.shift==='Morning').length;
+        const eCnt = shifts.filter(sh => dStaff.some(s=>s.id===sh.staff_id) && sh.shift==='Evening').length;
+        const nCnt = shifts.filter(sh => dStaff.some(s=>s.id===sh.staff_id) && sh.shift==='Night').length;
+        return `<div class="dept-card" onclick="switchPanel('dept',${d.id})">
+            <div class="dept-card-name">${esc(d.name)}</div>
+            <div class="dept-card-meta">
+                <span><i class="fas fa-users"></i> ${dStaff.length}</span>
+                <span><i class="fas fa-tasks"></i> ${activeTasks} tasks</span>
+            </div>
+            <div style="margin-top:8px;display:flex;gap:6px;font-size:0.67rem;color:var(--text-muted);">
+                <span>☀${mCnt}</span><span>🌤${eCnt}</span><span>🌙${nCnt}</span>
+            </div>
+            <div style="margin-top:6px;font-size:0.71rem;color:var(--blue-light);">View details →</div>
+        </div>`;
+    }).join('');
+}
 
-    // Add click handlers to sidebar menu items
-    document.querySelectorAll('.menu-item').forEach(item => {
-        item.addEventListener('click', () => {
-            const tabName = item.getAttribute('data-tab');
-            switchToTab(tabName);
-        });
+// ─────────────────────────────────────────────
+// ATTENDANCE MINI (overview dashboard)
+// ─────────────────────────────────────────────
+let _attTabFilter = 'all';
+function setAttTab(tab, btn) {
+    _attTabFilter = tab;
+    document.querySelectorAll('#attTabBar .tab-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    renderAttMini();
+}
+
+function renderAttMini() {
+    const body = document.getElementById('attMiniBody');
+    if (!body) return;
+
+    const today = new Date().toISOString().split('T')[0];
+    const dayLabels = ['M','T','W','T','F','S','S'];
+
+    // Get last 7 days
+    const last7 = Array.from({length:7}, (_,i) => {
+        const d = new Date(); d.setDate(d.getDate() - 6 + i);
+        return d.toISOString().split('T')[0];
     });
 
-    async function loadDepartments() {
-        try {
-            const response = await fetch('/get-departments/');
-            const departments = await response.json();
-            departmentsData = departments;
-            
-            const deptList = document.getElementById('departmentsList');
-            const deptSelect = document.getElementById('staffDepartment');
-            
-            if (!departments || departments.length === 0) {
-                deptList.innerHTML = '<tr><td colspan="4" class="text-center">No departments found</td></tr>';
-                deptSelect.innerHTML = '<option value="">No departments available</option>';
-                document.getElementById('totalDepartments').textContent = '0';
-                document.getElementById('sidebarDeptBadge').textContent = '0';
-                return;
-            }
-            
-            document.getElementById('totalDepartments').textContent = departments.length;
-            document.getElementById('sidebarDeptBadge').textContent = departments.length;
-            
-            const staffCountByDept = {};
-            if (staffData && staffData.length) {
-                staffData.forEach(staff => {
-                    if (staff.department_id) {
-                        staffCountByDept[staff.department_id] = (staffCountByDept[staff.department_id] || 0) + 1;
-                    }
-                });
-            }
-            
-            deptList.innerHTML = departments.map(dept => `
-                <tr>
-                    <td>${dept.id}</td>
-                    <td><strong>${escapeHtml(dept.name)}</strong></td>
-                    <td><span class="badge bg-info staff-count-badge">${staffCountByDept[dept.id] || 0}</span></td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary" onclick="viewDepartmentStaff(${dept.id})">
-                            <i class="fas fa-eye"></i> View Staff
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-            
-            deptSelect.innerHTML = '<option value="">Select Department</option>' + 
-                departments.map(dept => `<option value="${dept.id}">${escapeHtml(dept.name)}</option>`).join('');
-                
-        } catch (error) {
-            console.error('Error loading departments:', error);
-            showToast('Failed to load departments', 'error');
-        }
+    let filtered = [...staffMembers];
+    if (_attTabFilter !== 'all') {
+        const ids = new Set(shifts.filter(sh=>sh.shift===_attTabFilter).map(sh=>sh.staff_id));
+        filtered = filtered.filter(s => ids.has(s.id));
     }
 
-    async function loadStaff() {
-        try {
-            const response = await fetch('/get-staff/');
-            const staff = await response.json();
-            staffData = staff;
-            
-            const staffList = document.getElementById('staffList');
-            const staffSelect = document.getElementById('taskStaff');
-            
-            if (!staff || staff.length === 0) {
-                staffList.innerHTML = '<tr><td colspan="6" class="text-center">No staff members found</td></tr>';
-                staffSelect.innerHTML = '<option value="">No staff available</option>';
-                document.getElementById('totalStaff').textContent = '0';
-                document.getElementById('sidebarStaffBadge').textContent = '0';
-                return;
-            }
-            
-            document.getElementById('totalStaff').textContent = staff.length;
-            document.getElementById('sidebarStaffBadge').textContent = staff.length;
-            
-            const deptMap = {};
-            departmentsData.forEach(dept => {
-                deptMap[dept.id] = dept.name;
-            });
-            
-            staffList.innerHTML = staff.map(member => {
-                const departmentName = member.department_name || deptMap[member.department_id] || 'N/A';
-                const email = member.email && member.email !== '-' ? member.email : 'Not provided';
-                const role = member.role || 'Staff';
-                const roleClass = role.toLowerCase().replace(/\s+/g, '-');
-                
-                return `
-                    <tr>
-                        <td>${member.id}</td>
-                        <td><strong>${escapeHtml(member.name)}</strong></td>
-                        <td><span class="email-display">${escapeHtml(email)}</span></td>
-                        <td><span class="badge bg-primary">${escapeHtml(departmentName)}</span></td>
-                        <td><span class="badge-role badge-${roleClass}">${escapeHtml(role)}</span></td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="btn btn-sm btn-outline-info btn-sm-action" onclick="viewStaffDetails(${member.id})" title="View Details">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger btn-sm-action" onclick="deleteStaff(${member.id})" title="Delete">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
+    if (!filtered.length) {
+        body.innerHTML = '<div class="empty" style="padding:30px 10px;"><i class="fas fa-users"></i><p>No staff in this shift</p></div>';
+        return;
+    }
+
+    body.innerHTML = `
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);">
+            <div style="flex:1;font-size:0.67rem;color:var(--text-muted);font-weight:700;">STAFF</div>
+            <div style="display:flex;gap:3px;">
+                ${dayLabels.map(l=>`<div style="width:20px;text-align:center;font-size:0.6rem;color:var(--text-light);font-weight:700;">${l}</div>`).join('')}
+            </div>
+            <div style="width:30px;font-size:0.6rem;color:var(--text-muted);text-align:right;font-weight:700;">OT</div>
+        </div>
+        ${filtered.map(staff => {
+            const sh = shifts.find(s=>s.staff_id===staff.id);
+            const shiftVal = sh ? sh.shift : '—';
+            const staffAtt = attendance.filter(a => a.staff_id === staff.id);
+            let totalOT = 0;
+            const dots = last7.map(date => {
+                const rec = staffAtt.find(a => a.date === date);
+                const s = rec ? rec.status.toLowerCase() : 'o';
+                if (rec && rec.overtime_hours) totalOT += Number(rec.overtime_hours);
+                const colors = {p:'#10b981',a:'#ef4444',l:'#f59e0b',o:'#cbd5e1'};
+                const textColors = {p:'white',a:'white',l:'white',o:'#64748b'};
+                const labels = {p:'P',a:'A',l:'L',o:'–'};
+                return `<div class="att-dot ${s}" style="background:${colors[s]};color:${textColors[s]};">${labels[s]}</div>`;
             }).join('');
-            
-            staffSelect.innerHTML = '<option value="">Select Staff Member</option>' + 
-                staff.map(member => `<option value="${member.id}">${escapeHtml(member.name)} (${member.role || 'Staff'})</option>`).join('');
-                
-        } catch (error) {
-            console.error('Error loading staff:', error);
-            showToast('Failed to load staff', 'error');
-        }
-    }
-
-    async function loadTasks() {
-        try {
-            const response = await fetch('/get-tasks/');
-            const data = await response.json();
-            const tasks = data.tasks || [];
-            
-            const tasksList = document.getElementById('tasksList');
-            
-            if (!tasks || tasks.length === 0) {
-                tasksList.innerHTML = `
-                    <div class="text-center text-muted py-4">
-                        <i class="fas fa-inbox fa-3x mb-3"></i>
-                        <p>No tasks assigned yet</p>
-                    </div>
-                `;
-                document.getElementById('totalTasks').textContent = '0';
-                document.getElementById('sidebarTasksBadge').textContent = '0';
-                return;
-            }
-            
-            document.getElementById('totalTasks').textContent = tasks.length;
-            document.getElementById('sidebarTasksBadge').textContent = tasks.length;
-            
-            tasksList.innerHTML = tasks.map(task => `
-                <div class="task-item">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div style="flex: 1;">
-                            <div class="task-title"><strong>${escapeHtml(task.title)}</strong></div>
-                            <div class="task-description">${task.description ? escapeHtml(task.description) : 'No description'}</div>
-                            <div class="task-meta">
-                                <i class="fas fa-user"></i> ${escapeHtml(task.staff || 'Unknown')}
-                            </div>
-                        </div>
-                        <div class="text-end">
-                            <span class="task-status status-${(task.status || 'pending').toLowerCase()}">
-                                ${escapeHtml(task.status || 'Pending')}
-                            </span>
-                            <br>
-                            <button class="btn btn-sm btn-outline-success mt-2" onclick="completeTask(${task.id})">
-                                <i class="fas fa-check"></i> Complete
-                            </button>
-                        </div>
-                    </div>
+            return `<div class="att-mini-row">
+                <div style="flex:1;min-width:0;">
+                    <div class="att-mini-name">${esc(staff.name)}</div>
+                    <div class="att-mini-shift">${esc(shiftVal)}</div>
                 </div>
-            `).join('');
-            
-        } catch (error) {
-            console.error('Error loading tasks:', error);
-            showToast('Failed to load tasks', 'error');
-        }
+                <div class="att-dots">${dots}</div>
+                <div class="att-mini-ot">${totalOT > 0 ? totalOT+'h' : '—'}</div>
+            </div>`;
+        }).join('')}
+    `;
+}
+
+// ─────────────────────────────────────────────
+// RECENT TASKS TABLE (overview)
+// ─────────────────────────────────────────────
+function renderRecentTasks() {
+    const tbody = document.getElementById('recentTasksBody');
+    if (!tbody) return;
+    const filter = document.getElementById('taskFilterSel')?.value || '';
+
+    let filtered = [...tasks];
+    if (filter) filtered = filtered.filter(t => t.status === filter);
+    filtered.sort((a,b) => new Date(b.created_at||0) - new Date(a.created_at||0));
+    const shown = filtered.slice(0, 30);
+
+    if (!shown.length) {
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><i class="fas fa-tasks"></i><p>No tasks found</p></div></td></tr>`;
+        return;
     }
 
-    document.getElementById('addDepartmentForm')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const name = document.getElementById('deptName').value.trim();
-        if (!name) return showToast('Department name required', 'error');
-        
-        const formData = new FormData();
-        formData.append('name', name);
-        
-        try {
-            const response = await fetch('/add-department/', {
-                method: 'POST',
-                body: formData,
-                headers: { 'X-CSRFToken': csrftoken }
-            });
-            if (response.ok) {
-                showToast('✅ Department added successfully!');
-                document.getElementById('deptName').value = '';
-                await loadDepartments();
-            } else {
-                showToast('Failed to add department', 'error');
-            }
-        } catch (error) {
-            showToast('Error adding department', 'error');
-        }
-    });
+    tbody.innerHTML = shown.map(t => {
+        const st = staffMembers.find(s => s.id === t.staff_id);
+        const dept = st ? departments.find(d => d.id === st.department_id) : null;
+        const sh = st ? shifts.find(s => s.staff_id === st.id) : null;
+        const shiftVal = sh ? sh.shift : '—';
+        const shiftClass = {Morning:'badge-morning',Evening:'badge-evening',Night:'badge-night'}[shiftVal]||'badge-unassigned';
+        const isDone = t.status === 'completed';
+        return `<tr>
+            <td>
+                <div style="font-weight:600;${isDone?'text-decoration:line-through;color:var(--text-muted);':''}">${esc(t.title)}</div>
+                ${t.description ? `<div style="font-size:0.7rem;color:var(--text-light);">${esc(t.description.substring(0,50))}${t.description.length>50?'…':''}</div>` : ''}
+            </td>
+            <td style="font-weight:600;">${esc(st?.name||'—')}</td>
+            <td style="color:var(--text-muted);">${esc(dept?.name||'—')}</td>
+            <td><span class="badge ${shiftClass}" style="font-size:0.66rem;">${esc(shiftVal)}</span></td>
+            <td style="color:var(--text-muted);font-size:0.78rem;">${fmtDate(t.created_at)}</td>
+            <td>${isDone
+                ? `<span class="badge badge-completed"><i class="fas fa-check-circle"></i> Done</span>`
+                : `<span class="badge badge-pending"><i class="fas fa-clock"></i> Pending</span>`
+            }</td>
+            <td>${!isDone
+                ? `<button class="btn btn-ghost btn-sm" onclick="completeTask(${t.id},this)"><i class="fas fa-check"></i> Complete</button>`
+                : `<span style="font-size:0.72rem;color:var(--text-light);">—</span>`
+            }</td>
+        </tr>`;
+    }).join('');
+}
 
-    document.getElementById('addStaffForm')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const formData = new FormData();
-        formData.append('name', document.getElementById('staffName').value.trim());
-        formData.append('email', document.getElementById('staffEmail').value.trim());
-        formData.append('phone', document.getElementById('staffPhone').value.trim());
-        formData.append('department', document.getElementById('staffDepartment').value);
-        formData.append('role', document.getElementById('staffRole').value);
-        formData.append('password', document.getElementById('staffPassword').value);
-        
-        if (!formData.get('name') || !formData.get('email') || !formData.get('department') || !formData.get('password')) {
-            return showToast('Please fill all required fields', 'error');
-        }
-        
-        try {
-            const response = await fetch('/add-staff/', {
-                method: 'POST',
-                body: formData,
-                headers: { 'X-CSRFToken': csrftoken }
-            });
-            if (response.ok) {
-                showToast('✅ Staff member added successfully!');
-                document.getElementById('addStaffForm').reset();
-                await loadStaff();
-                await loadDepartments();
-            } else {
-                showToast('Failed to add staff', 'error');
-            }
-        } catch (error) {
-            showToast('Error adding staff member', 'error');
-        }
+// ─────────────────────────────────────────────
+// DEPARTMENT PANEL
+// ─────────────────────────────────────────────
+function setDeptTab(tab) {
+    _deptTab = tab;
+    ['All','Morning','Evening','Night'].forEach(t => {
+        const el = document.getElementById('dTab'+t);
+        if (el) el.classList.toggle('active', t.toLowerCase() === tab.toLowerCase() || (tab==='all' && t==='All'));
     });
+    renderStaffTable();
+}
 
-    document.getElementById('assignTaskForm')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const staffId = document.getElementById('taskStaff').value;
-        const title = document.getElementById('taskTitle').value.trim();
-        const description = document.getElementById('taskDescription').value.trim();
-        
-        if (!staffId || !title) {
-            return showToast('Please select staff and enter task title', 'error');
-        }
-        
-        const formData = new FormData();
-        formData.append('staff', staffId);
-        formData.append('title', title);
-        formData.append('description', description);
-        
-        try {
-            const response = await fetch('/assign-task/', {
-                method: 'POST',
-                body: formData,
-                headers: { 'X-CSRFToken': csrftoken }
-            });
-            if (response.ok) {
-                showToast('✅ Task assigned successfully!');
-                document.getElementById('assignTaskForm').reset();
-                await loadTasks();
-            } else {
-                showToast('Failed to assign task', 'error');
-            }
-        } catch (error) {
-            showToast('Error assigning task', 'error');
-        }
+async function renderDeptPanel() {
+    await fetchAll();
+    renderSidebarDepts();
+
+    const dept = departments.find(d => d.id === currentDeptId);
+    if (!dept) return;
+
+    const deptStaff = staffMembers.filter(s => s.department_id === currentDeptId);
+    const pending = tasks.filter(t => {
+        const st = staffMembers.find(s => s.id === t.staff_id);
+        return st && st.department_id === currentDeptId && t.status !== 'completed';
+    }).length;
+
+    document.getElementById('deptPanelTitle').textContent = dept.name + ' Department';
+    document.getElementById('deptPanelMeta').innerHTML =
+        `<i class="fas fa-users"></i> ${deptStaff.length} staff &nbsp;•&nbsp; <i class="fas fa-clock"></i> ${pending} pending tasks`;
+    document.getElementById('deptAddStaffBtn').onclick = () => switchPanel('add-staff', currentDeptId);
+
+    // Shift mini cards for this dept
+    renderShiftCards('deptShiftRow', currentDeptId);
+    renderStaffTable();
+}
+
+function renderStaffTable() {
+    const tbody = document.getElementById('staffTableBody');
+    if (!tbody || !currentDeptId) return;
+
+    let deptStaff = staffMembers.filter(s => s.department_id === currentDeptId);
+    if (_deptTab !== 'all') {
+        const shiftIds = new Set(shifts.filter(sh=>sh.shift===_deptTab).map(sh=>sh.staff_id));
+        deptStaff = deptStaff.filter(s => shiftIds.has(s.id));
+    }
+
+    if (!deptStaff.length) {
+        tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><i class="fas fa-user-slash"></i><p>No staff in this shift</p></div></td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = deptStaff.map(staff => {
+        const staffShift = shifts.find(sh => sh.staff_id === staff.id);
+        const shiftVal   = staffShift ? staffShift.shift : 'Unassigned';
+        const shiftDate  = staffShift ? staffShift.date  : null;
+        const shiftClass = {Morning:'badge-morning',Evening:'badge-evening',Night:'badge-night'}[shiftVal]||'badge-unassigned';
+        const shiftIcons = {Morning:'fa-sun',Evening:'fa-cloud-sun',Night:'fa-moon'};
+        const shiftIcon  = shiftIcons[shiftVal]||'fa-question-circle';
+        const otHrs      = staffShift?.overtime_hours ? Number(staffShift.overtime_hours) : 0;
+
+        const staffTasks  = tasks.filter(t => t.staff_id === staff.id);
+        const pendingT    = staffTasks.filter(t => t.status !== 'completed');
+        const doneCount   = staffTasks.filter(t => t.status === 'completed').length;
+
+        const tasksHtml = pendingT.length
+            ? pendingT.map(t => `<div class="task-pill">
+                <div class="task-pill-body">
+                    <div class="task-pill-title">${esc(t.title)}</div>
+                    ${t.description ? `<div class="task-pill-date">${esc(t.description.substring(0,55))}${t.description.length>55?'…':''}</div>` : ''}
+                    <div class="task-pill-date"><i class="fas fa-calendar-alt"></i> ${fmtDate(t.created_at)}</div>
+                    <button class="btn-complete" onclick="completeTask(${t.id},this)"><i class="fas fa-check"></i> Mark Complete</button>
+                </div></div>`).join('')
+            : `<span class="no-tasks">No pending tasks</span>`;
+
+        const statusHtml = pendingT.length
+            ? `<span class="badge badge-pending"><i class="fas fa-clock"></i> ${pendingT.length} pending</span>`
+            : staffTasks.length
+                ? `<span class="badge badge-completed"><i class="fas fa-check-circle"></i> All done</span>`
+                : `<span style="color:var(--text-light);font-size:0.76rem;">No tasks</span>`;
+
+        return `<tr>
+            <td>
+                <div style="font-weight:700;">${esc(staff.name)}</div>
+                <div style="font-size:0.72rem;color:var(--text-muted);">${esc(staff.email||'—')}</div>
+                ${staff.phone ? `<div style="font-size:0.69rem;color:var(--text-light);">${esc(staff.phone)}</div>` : ''}
+            </td>
+            <td><span class="badge badge-role">${esc(staff.role||'Staff')}</span></td>
+            <td>
+                <span class="badge ${shiftClass}"><i class="fas ${shiftIcon}"></i> ${esc(shiftVal)}</span>
+                ${shiftDate ? `<div style="font-size:0.67rem;color:var(--text-light);margin-top:3px;"><i class="fas fa-calendar-alt"></i> ${fmtDate(shiftDate)}</div>` : ''}
+                ${otHrs > 0 ? `<div style="font-size:0.67rem;color:var(--accent);margin-top:2px;"><i class="fas fa-plus-circle"></i> OT: ${otHrs}h</div>` : ''}
+                <div style="margin-top:4px;">
+                    <button class="btn btn-ghost btn-sm" onclick="openShiftModal(${staff.id},'${shiftVal}','${esc(staff.name)}',${otHrs})">
+                        <i class="fas fa-edit"></i> Change
+                    </button>
+                </div>
+            </td>
+            <td style="min-width:200px;">
+                ${tasksHtml}
+                ${doneCount > 0 ? `<div class="completed-note"><i class="fas fa-check-double"></i> ${doneCount} completed</div>` : ''}
+            </td>
+            <td>${statusHtml}</td>
+            <td><button class="btn btn-ghost btn-sm" onclick="openTaskModal(${staff.id})"><i class="fas fa-plus-circle"></i> Add Task</button></td>
+        </tr>`;
+    }).join('');
+}
+
+// ─────────────────────────────────────────────
+// DEPT DROPDOWN
+// ─────────────────────────────────────────────
+function populateDeptSelect(selectId) {
+    const sel = document.getElementById(selectId);
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Select department</option>' +
+        departments.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join('');
+}
+
+// ─────────────────────────────────────────────
+// CREATE DEPARTMENT (MODIFIED: uses dropdown value)
+// ─────────────────────────────────────────────
+document.getElementById('createDeptBtn').addEventListener('click', async function () {
+    const name = document.getElementById('newDeptName').value.trim();
+    if (!name) return toast('Please select a department from the dropdown','error');
+    this.disabled = true; this.innerHTML = '<span class="spinner"></span> Creating…';
+    const fd = new FormData(); fd.append('name', name);
+    try {
+        const res = await fetch('/add-department/',{method:'POST',body:fd,headers:{'X-CSRFToken':csrf()}});
+        if (res.ok) { toast(`Department "${name}" created`); document.getElementById('newDeptName').value=''; await refreshOverview(); switchPanel('overview'); }
+        else toast('Failed to create department','error');
+    } catch { toast('Network error','error'); }
+    this.disabled = false; this.innerHTML = '<i class="fas fa-plus-circle"></i> Create Department';
+});
+
+// ─────────────────────────────────────────────
+// ADD STAFF
+// ─────────────────────────────────────────────
+document.getElementById('addStaffBtn').addEventListener('click', async function () {
+    const name   = document.getElementById('sName').value.trim();
+    const deptId = document.getElementById('sDept').value;
+    const shift  = document.getElementById('sShift').value;
+    if (!name)   return toast('Staff name is required','error');
+    if (!deptId) return toast('Please select a department','error');
+    this.disabled = true; this.innerHTML = '<span class="spinner"></span> Adding…';
+    const fd = new FormData();
+    ['sName','sEmail','sPhone','sRole','sPass'].forEach(id => {
+        const map = {sName:'name',sEmail:'email',sPhone:'phone',sRole:'role',sPass:'password'};
+        fd.append(map[id], document.getElementById(id).value);
     });
+    fd.append('department', deptId);
+    try {
+        const res = await fetch('/add-staff/',{method:'POST',body:fd,headers:{'X-CSRFToken':csrf()}});
+        if (res.ok) {
+            const newStaff = await res.json();
+            toast(`Staff "${name}" added`);
+            if (shift && newStaff.id) {
+                const sf = new FormData();
+                sf.append('staff', newStaff.id); sf.append('department', deptId); sf.append('shift', shift);
+                await fetch('/assign-shift/',{method:'POST',body:sf,headers:{'X-CSRFToken':csrf()}});
+            }
+            ['sName','sEmail','sPhone','sPass'].forEach(id => document.getElementById(id).value='');
+            document.getElementById('sDept').value=''; document.getElementById('sRole').value='Staff'; document.getElementById('sShift').value='';
+            await refreshOverview(); switchPanel('overview');
+        } else toast('Failed to add staff','error');
+    } catch { toast('Network error','error'); }
+    this.disabled = false; this.innerHTML = '<i class="fas fa-user-plus"></i> Add Staff Member';
+});
 
-    window.viewDepartmentStaff = function(deptId) {
-        const department = departmentsData.find(d => d.id === deptId);
-        const staffInDept = staffData.filter(s => s.department_id === deptId);
-        
-        if (staffInDept.length === 0) {
-            showToast(`${department?.name || 'Department'} has no staff members yet`, 'info');
+// ─────────────────────────────────────────────
+// TASK MODAL
+// ─────────────────────────────────────────────
+function openTaskModal(staffId) {
+    document.getElementById('taskStaffId').value = staffId;
+    document.getElementById('taskTitle').value = '';
+    document.getElementById('taskDesc').value = '';
+    openModal('taskModal');
+}
+document.getElementById('confirmTaskBtn').addEventListener('click', async function () {
+    const staffId = document.getElementById('taskStaffId').value;
+    const title   = document.getElementById('taskTitle').value.trim();
+    if (!title) return toast('Task title is required','error');
+    this.disabled = true; this.innerHTML = '<span class="spinner"></span>';
+    const fd = new FormData();
+    fd.append('staff', staffId); fd.append('title', title); fd.append('description', document.getElementById('taskDesc').value);
+    try {
+        const res = await fetch('/assign-task/',{method:'POST',body:fd,headers:{'X-CSRFToken':csrf()}});
+        if (res.ok) {
+            toast('Task assigned'); closeModal('taskModal');
+            if (currentDeptId) { await fetchAll(); renderStaffTable(); }
+            else refreshOverview();
+        } else toast('Failed to assign task','error');
+    } catch { toast('Network error','error'); }
+    this.disabled = false; this.innerHTML = '<i class="fas fa-check"></i> Assign Task';
+});
+
+// ─────────────────────────────────────────────
+// COMPLETE TASK
+// ─────────────────────────────────────────────
+async function completeTask(taskId, btn) {
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+    const fd = new FormData(); fd.append('task_id', taskId);
+    try {
+        const res = await fetch('/complete-task/',{method:'POST',body:fd,headers:{'X-CSRFToken':csrf()}});
+        if (res.ok) {
+            toast('Task marked complete','success');
+            if (currentDeptId) { await fetchAll(); renderStaffTable(); renderRecentTasks(); }
+            else refreshOverview();
         } else {
-            const staffNames = staffInDept.map(s => s.name).join(', ');
-            showToast(`${department?.name || 'Department'} staff: ${staffNames}`, 'info');
+            toast('Failed','error'); btn.disabled=false; btn.innerHTML='<i class="fas fa-check"></i> Mark Complete';
         }
-        switchToTab('staff');
-    };
+    } catch { toast('Network error','error'); btn.disabled=false; btn.innerHTML='<i class="fas fa-check"></i> Mark Complete'; }
+}
 
-    window.viewStaffDetails = function(staffId) {
-        const staff = staffData.find(s => s.id === staffId);
-        if (staff) {
-            showToast(`Staff: ${staff.name}\nEmail: ${staff.email || 'Not provided'}\nRole: ${staff.role || 'Staff'}`, 'info');
-        }
-    };
+// ─────────────────────────────────────────────
+// SHIFT MODAL
+// ─────────────────────────────────────────────
+function openShiftModal(staffId, currentShift, staffName='', otHrs=0) {
+    document.getElementById('shiftStaffId').value = staffId;
+    document.getElementById('shiftStaffName').textContent = staffName;
+    document.getElementById('otHours').value = otHrs || 0;
+    const sel = document.getElementById('shiftSelect');
+    sel.value = ['Morning','Evening','Night'].includes(currentShift) ? currentShift : 'Morning';
+    openModal('shiftModal');
+}
+document.getElementById('confirmShiftBtn').addEventListener('click', async function () {
+    const staffId = document.getElementById('shiftStaffId').value;
+    const shift   = document.getElementById('shiftSelect').value;
+    const ot      = document.getElementById('otHours').value || 0;
+    if (!staffId) return;
+    this.disabled = true; this.innerHTML = '<span class="spinner"></span>';
+    const fd = new FormData();
+    fd.append('staff', staffId); fd.append('shift', shift); fd.append('overtime_hours', ot);
+    const st = staffMembers.find(s => s.id == staffId);
+    if (st) fd.append('department', st.department_id);
+    try {
+        const res = await fetch('/assign-shift/',{method:'POST',body:fd,headers:{'X-CSRFToken':csrf()}});
+        if (res.ok) {
+            toast(`Shift updated to ${shift}${ot>0?' (OT: '+ot+'h)':''}`);
+            closeModal('shiftModal');
+            if (currentDeptId) { await fetchAll(); renderShiftCards('deptShiftRow', currentDeptId); renderStaffTable(); }
+            else refreshOverview();
+        } else toast('Failed to update shift','error');
+    } catch { toast('Network error','error'); }
+    this.disabled = false; this.innerHTML = '<i class="fas fa-save"></i> Update Shift';
+});
 
-    window.deleteStaff = function(staffId) {
-        if (confirm('Are you sure you want to delete this staff member?')) {
-            showToast(`Staff member deletion - This feature requires backend implementation`, 'info');
-        }
-    };
+// ─────────────────────────────────────────────
+// ATTENDANCE MODAL
+// ─────────────────────────────────────────────
+function populateAttStaff() {
+    const sel = document.getElementById('attStaffSel');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Choose…</option>' +
+        staffMembers.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+    document.getElementById('attDate').value = new Date().toISOString().split('T')[0];
+}
+document.getElementById('confirmAttBtn').addEventListener('click', async function () {
+    const staffId = document.getElementById('attStaffSel').value;
+    const date    = document.getElementById('attDate').value;
+    const status  = document.getElementById('attStatus').value;
+    const ot      = document.getElementById('attOT').value || 0;
+    if (!staffId) return toast('Please select a staff member','error');
+    if (!date)    return toast('Please select a date','error');
+    this.disabled = true; this.innerHTML = '<span class="spinner"></span>';
+    const fd = new FormData();
+    fd.append('staff', staffId); fd.append('date', date); fd.append('status', status); fd.append('overtime_hours', ot);
+    try {
+        const res = await fetch('/mark-attendance/',{method:'POST',body:fd,headers:{'X-CSRFToken':csrf()}});
+        if (res.ok) {
+            toast('Attendance saved','success'); closeModal('markAttModal');
+            await fetchAll(); renderAttMini();
+        } else toast('Failed to save attendance','error');
+    } catch { toast('Network error','error'); }
+    this.disabled = false; this.innerHTML = '<i class="fas fa-check"></i> Save Attendance';
+});
 
-    window.completeTask = function(taskId) {
-        if (confirm('Mark this task as completed?')) {
-            showToast(`Task marked as completed!`, 'success');
-        }
-    };
+// Pre-populate attendance modal when opened
+document.getElementById('markAttModal').addEventListener('transitionend', () => {});
+const _origOpenModal = openModal;
+window.openModal = function(id) {
+    _origOpenModal(id);
+    if (id === 'markAttModal') populateAttStaff();
+};
 
-    function escapeHtml(str) {
-        if (!str) return '';
-        return String(str).replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    async function init() {
-        await loadDepartments();
-        await loadStaff();
-        await loadTasks();
-    }
-    
-    init();
-    
-    setInterval(async () => {
-        await loadDepartments();
-        await loadStaff();
-        await loadTasks();
-    }, 30000);
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+(async function init() {
+    await refreshOverview();
+    switchPanel('overview');
+})();
 </script>
 </body>
 </html>

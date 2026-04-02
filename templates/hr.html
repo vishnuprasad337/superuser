@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Dashboard | Hotel ERP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --navy: #0f1f3d;
+            --blue: #1a56db;
+            --blue-light: #3b82f6;
+            --accent: #f59e0b;
+            --green: #10b981;
+            --red: #ef4444;
+            --purple: #7c3aed;
+            --teal: #0d9488;
+            --surface: #ffffff;
+            --surface-2: #f8fafc;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --sidebar-w: 270px;
+            --radius: 12px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+            --shadow: 0 4px 16px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,0.12);
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--surface-2); color: var(--text); min-height: 100vh; }
+
+        /* Sidebar */
+        .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-w); height: 100vh; background: var(--navy); display: flex; flex-direction: column; z-index: 100; overflow-y: auto; }
+        .sidebar-brand { padding: 22px 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .brand-logo { display: flex; align-items: center; gap: 10px; }
+        .brand-icon { width: 36px; height: 36px; background: var(--blue); border-radius: 9px; display: grid; place-items: center; color: white; font-size: 16px; }
+        .brand-name { font-size: 0.95rem; font-weight: 800; color: white; }
+        .brand-sub { font-size: 0.65rem; color: rgba(255,255,255,0.45); }
+        .sidebar-nav { flex: 1; padding: 14px 10px; }
+        .nav-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.3); padding: 12px 10px 6px; }
+        .nav-btn { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 9px; cursor: pointer; color: rgba(255,255,255,0.6); font-size: 0.83rem; font-weight: 500; transition: all 0.18s; border: none; background: transparent; width: 100%; text-align: left; font-family: inherit; }
+        .nav-btn i { width: 18px; }
+        .nav-btn:hover { background: rgba(255,255,255,0.07); color: white; }
+        .nav-btn.active { background: var(--blue); color: white; }
+        .sidebar-footer { padding: 14px 10px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.7rem; color: rgba(255,255,255,0.25); text-align: center; line-height: 1.8; }
+
+        /* Main */
+        .main { margin-left: var(--sidebar-w); min-height: 100vh; padding: 24px; }
+        .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+        .topbar-left h1 { font-size: 1.5rem; font-weight: 800; }
+        .topbar-left p { font-size: 0.82rem; color: var(--text-muted); margin-top: 2px; }
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        /* Stats */
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+        .stat-card { background: var(--surface); border-radius: var(--radius); padding: 18px 20px; border: 1px solid var(--border); display: flex; align-items: center; gap: 14px; transition: transform 0.18s; cursor: pointer; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+        .stat-icon { width: 46px; height: 46px; border-radius: 11px; display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0; }
+        .stat-icon.green  { background: #ecfdf5; color: var(--green); }
+        .stat-icon.amber  { background: #fffbeb; color: var(--accent); }
+        .stat-icon.purple { background: #f5f3ff; color: var(--purple); }
+        .stat-icon.blue   { background: #eff6ff; color: var(--blue); }
+        .stat-icon.teal   { background: #f0fdfa; color: var(--teal); }
+        .stat-icon.red    { background: #fef2f2; color: var(--red); }
+        .stat-number { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+        .stat-label  { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+        /* Cards */
+        .card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 20px; }
+        .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+        .card-title  { font-size: 0.92rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .card-body   { padding: 20px; }
+
+        /* Table */
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); background: var(--surface-2); padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+        .data-table td { padding: 12px 16px; font-size: 0.83rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tbody tr { transition: background 0.15s; }
+        .data-table tbody tr:hover { background: var(--surface-2); }
+
+        /* Employee cell */
+        .emp-cell { display: flex; align-items: center; gap: 10px; }
+        .emp-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--blue); color: white; font-size: 0.72rem; font-weight: 700; display: grid; place-items: center; flex-shrink: 0; }
+
+        /* Badges */
+        .badge { padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; display: inline-block; }
+        .badge-pending   { background: #fef3c7; color: #92400e; }
+        .badge-completed { background: #d1fae5; color: #065f46; }
+        .badge-morning   { background: #eff6ff; color: #1e40af; }
+        .badge-evening   { background: #f5f3ff; color: #5b21b6; }
+        .badge-night     { background: #1e293b; color: #94a3b8; }
+        .badge-role      { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+
+        /* Task items */
+        .task-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .task-item:last-child { border-bottom: none; }
+        .task-info { flex: 1; }
+        .task-title { font-weight: 600; font-size: 0.85rem; }
+        .task-desc  { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+        /* Payroll */
+        .net-pay { font-weight: 700; color: var(--green); }
+        .salary-unset { color: var(--text-light); font-style: italic; }
+
+        /* Buttons */
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.18s; font-family: inherit; }
+        .btn-primary { background: var(--blue); color: white; }
+        .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
+        .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+        .btn-outline:hover { background: var(--surface-2); border-color: var(--blue-light); }
+        .btn-sm { padding: 5px 12px; font-size: 0.74rem; }
+
+        /* Forms */
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 6px; }
+        .form-control { width: 100%; padding: 9px 13px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.83rem; font-family: inherit; background: var(--surface); color: var(--text); }
+        .form-control:focus { outline: none; border-color: var(--blue-light); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+        /* Modal */
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 200; display: none; place-items: center; }
+        .modal-backdrop.open { display: grid; }
+        .modal { background: var(--surface); border-radius: 16px; width: 100%; max-width: 520px; box-shadow: var(--shadow-lg); animation: modalIn 0.2s ease; }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .modal-header { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header span { font-size: 1.05rem; font-weight: 700; }
+        .modal-close { width: 30px; height: 30px; border-radius: 8px; border: none; background: var(--surface-2); cursor: pointer; font-size: 1.2rem; transition: all 0.15s; }
+        .modal-close:hover { background: #fee2e2; color: var(--red); }
+        .modal-body   { padding: 22px; }
+        .modal-footer { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+
+        /* Toast */
+        .toast-stack { position: fixed; top: 20px; right: 20px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+        .toast { padding: 12px 16px; border-radius: 10px; font-size: 0.82rem; font-weight: 500; background: var(--green); color: white; box-shadow: var(--shadow-lg); animation: slideIn 0.3s ease; display: flex; align-items: center; gap: 10px; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        .toast.error { background: var(--red); }
+
+        /* Tab bar */
+        .tab-bar { display: flex; gap: 2px; background: var(--surface-2); border-radius: 8px; padding: 3px; }
+        .tab-btn { padding: 6px 14px; border-radius: 6px; border: none; background: transparent; font-size: 0.78rem; font-weight: 600; cursor: pointer; color: var(--text-muted); transition: all 0.15s; font-family: inherit; }
+        .tab-btn.active { background: var(--surface); color: var(--blue); box-shadow: var(--shadow-sm); }
+
+        /* Empty state */
+        .empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+        .empty i { font-size: 2rem; margin-bottom: 10px; opacity: 0.5; display: block; }
+
+        /* Misc */
+        .menu-btn { display: none; position: fixed; top: 14px; left: 14px; z-index: 150; background: var(--navy); color: white; border: none; width: 38px; height: 38px; border-radius: 9px; cursor: pointer; font-size: 1rem; }
+        .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; padding: 16px; padding-top: 60px; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .menu-btn { display: flex; align-items: center; justify-content: center; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<button class="menu-btn" id="menuBtn"><i class="fas fa-bars"></i></button>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-logo">
+            <div class="brand-icon"><i class="fas fa-hotel"></i></div>
+            <div>
+                <div class="brand-name">Hotel ERP</div>
+                <div class="brand-sub">Human Resources</div>
+            </div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-label">HR Management</div>
+        <button class="nav-btn active" data-panel="overview"><i class="fas fa-chart-pie"></i> Overview</button>
+        <button class="nav-btn" data-panel="employees"><i class="fas fa-users"></i> Employees</button>
+        <button class="nav-btn" data-panel="attendance"><i class="fas fa-clock"></i> Attendance</button>
+        <button class="nav-btn" data-panel="tasks"><i class="fas fa-tasks"></i> Tasks</button>
+        <button class="nav-btn" data-panel="payroll"><i class="fas fa-money-bill-wave"></i> Payroll</button>
+    </nav>
+    <div class="sidebar-footer">
+        <i class="fas fa-user-circle"></i> {{ staff.name }}<br>
+        <i class="fas fa-building"></i> {{ hotel.hotel_name }}<br>
+        <i class="fas fa-id-badge"></i> HR Manager
+    </div>
+</aside>
+
+<main class="main">
+
+    <!-- OVERVIEW PANEL -->
+    <div class="panel active" id="panel-overview">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-chart-pie"></i> HR Dashboard</h1>
+                <p>Welcome back, {{ staff.name }}! Here's your workforce overview.</p>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card" onclick="switchPanel('employees')">
+                <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+                <div><div class="stat-number">{{ total_staff }}</div><div class="stat-label">Total Employees</div></div>
+            </div>
+            <div class="stat-card" onclick="switchPanel('employees')">
+                <div class="stat-icon purple"><i class="fas fa-sitemap"></i></div>
+                <div><div class="stat-number">{{ total_departments }}</div><div class="stat-label">Departments</div></div>
+            </div>
+            <div class="stat-card" onclick="switchPanel('tasks')">
+                <div class="stat-icon amber"><i class="fas fa-hourglass-half"></i></div>
+                <div><div class="stat-number">{{ tasks|length }}</div><div class="stat-label">Active Tasks</div></div>
+            </div>
+            <div class="stat-card" onclick="switchPanel('attendance')">
+                <div class="stat-icon green"><i class="fas fa-calendar-check"></i></div>
+                <div><div class="stat-number">{{ shifts|length }}</div><div class="stat-label">Shifts Today</div></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-users"></i> Recent Employees</div>
+                <button class="btn btn-outline btn-sm" onclick="switchPanel('employees')"><i class="fas fa-arrow-right"></i> View All</button>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <table class="data-table">
+                    <thead><tr><th>Employee</th><th>Department</th><th>Role</th></tr></thead>
+                    <tbody>
+                        {% for emp in employees|slice:":5" %}
+                        <tr>
+                            <td>
+                                <div class="emp-cell">
+                                    <div class="emp-avatar">{{ emp.name|first|upper }}</div>
+                                    {{ emp.name }}
+                                </div>
+                            </td>
+                            <td>{{ emp.department.name }}</td>
+                            <td><span class="badge badge-role">{{ emp.role }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3"><div class="empty"><i class="fas fa-users-slash"></i><p>No employees found</p></div></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-tasks"></i> Recent Tasks</div>
+                <button class="btn btn-outline btn-sm" onclick="switchPanel('tasks')"><i class="fas fa-arrow-right"></i> View All</button>
+            </div>
+            <div class="card-body">
+                {% for task in tasks|slice:":4" %}
+                <div class="task-item">
+                    <div class="task-info">
+                        <div class="task-title">{{ task.title }}</div>
+                        <div class="task-desc"><i class="fas fa-user"></i> {{ task.staff.name }}</div>
+                    </div>
+                    <span class="badge {% if task.status == 'completed' %}badge-completed{% else %}badge-pending{% endif %}">
+                        {{ task.status|default:"pending"|title }}
+                    </span>
+                </div>
+                {% empty %}
+                <div class="empty"><i class="fas fa-check-circle"></i><p>No tasks available</p></div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- EMPLOYEES PANEL -->
+    <div class="panel" id="panel-employees">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-users"></i> Employees</h1>
+                <p>Manage your hotel's workforce</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openModal('addEmployeeModal')"><i class="fas fa-plus"></i> Add Employee</button>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+                <div><div class="stat-number">{{ total_staff }}</div><div class="stat-label">Total Staff</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="fas fa-sitemap"></i></div>
+                <div><div class="stat-number">{{ total_departments }}</div><div class="stat-label">Departments</div></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-list"></i> All Employees</div>
+                <div class="tab-bar" id="empFilterBar">
+                    <button class="tab-btn active" onclick="filterRows('empTable', 'all', this, 'role')">All</button>
+                    <button class="tab-btn" onclick="filterRows('empTable', 'manager', this, 'role')">Managers</button>
+                    <button class="tab-btn" onclick="filterRows('empTable', 'staff', this, 'role')">Staff</button>
+                </div>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <table class="data-table" id="empTable">
+                    <thead><tr><th>Employee</th><th>Department</th><th>Role</th></tr></thead>
+                    <tbody>
+                        {% for emp in employees %}
+                        <tr data-role="{{ emp.role|lower }}">
+                            <td>
+                                <div class="emp-cell">
+                                    <div class="emp-avatar">{{ emp.name|first|upper }}</div>
+                                    {{ emp.name }}
+                                </div>
+                            </td>
+                            <td>{{ emp.department.name }}</td>
+                            <td><span class="badge badge-role">{{ emp.role }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3"><div class="empty"><i class="fas fa-users-slash"></i><p>No employees found</p></div></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ATTENDANCE PANEL -->
+    <div class="panel" id="panel-attendance">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-clock"></i> Attendance &amp; Shifts</h1>
+                <p>Track employee schedules and shift data</p>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-sun"></i></div>
+                <div><div class="stat-number" id="morningCount">0</div><div class="stat-label">Morning Shifts</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="fas fa-cloud-sun"></i></div>
+                <div><div class="stat-number" id="eveningCount">0</div><div class="stat-label">Evening Shifts</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon teal"><i class="fas fa-moon"></i></div>
+                <div><div class="stat-number" id="nightCount">0</div><div class="stat-label">Night Shifts</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-calendar-check"></i></div>
+                <div><div class="stat-number">{{ shifts|length }}</div><div class="stat-label">Total Shifts</div></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-calendar-alt"></i> Shift Schedule</div>
+                <div class="tab-bar" id="shiftFilterBar">
+                    <button class="tab-btn active" onclick="filterRows('shiftTable', 'all', this, 'shift')">All</button>
+                    <button class="tab-btn" onclick="filterRows('shiftTable', 'morning', this, 'shift')">Morning</button>
+                    <button class="tab-btn" onclick="filterRows('shiftTable', 'evening', this, 'shift')">Evening</button>
+                    <button class="tab-btn" onclick="filterRows('shiftTable', 'night', this, 'shift')">Night</button>
+                </div>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <table class="data-table" id="shiftTable">
+                    <thead><tr><th>Employee</th><th>Department</th><th>Shift</th><th>Date</th></tr></thead>
+                    <tbody>
+                        {% for s in shifts %}
+                        <tr data-shift="{{ s.shift|lower }}">
+                            <td>
+                                <div class="emp-cell">
+                                    <div class="emp-avatar">{{ s.staff.name|first|upper }}</div>
+                                    {{ s.staff.name }}
+                                </div>
+                            </td>
+                            <td>{{ s.department.name }}</td>
+                            <td>
+                                <span class="badge {% if s.shift|lower == 'morning' %}badge-morning{% elif s.shift|lower == 'evening' %}badge-evening{% else %}badge-night{% endif %}">
+                                    {{ s.shift }}
+                                </span>
+                            </td>
+                            <td>{{ s.date }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4"><div class="empty"><i class="fas fa-calendar-times"></i><p>No shift data available</p></div></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TASKS PANEL -->
+    <div class="panel" id="panel-tasks">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-tasks"></i> Tasks</h1>
+                <p>Monitor employee task assignments and progress</p>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon amber"><i class="fas fa-hourglass-half"></i></div>
+                <div><div class="stat-number" id="pendingTaskCount">0</div><div class="stat-label">Pending</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-check-double"></i></div>
+                <div><div class="stat-number" id="completedTaskCount">0</div><div class="stat-label">Completed</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-tasks"></i></div>
+                <div><div class="stat-number">{{ tasks|length }}</div><div class="stat-label">Total Tasks</div></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-clipboard-list"></i> All Tasks</div>
+                <div class="tab-bar" id="taskFilterBar">
+                    <button class="tab-btn active" onclick="filterRows('taskTable', 'all', this, 'status')">All</button>
+                    <button class="tab-btn" onclick="filterRows('taskTable', 'pending', this, 'status')">Pending</button>
+                    <button class="tab-btn" onclick="filterRows('taskTable', 'completed', this, 'status')">Completed</button>
+                </div>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <table class="data-table" id="taskTable">
+                    <thead><tr><th>Task</th><th>Assigned To</th><th>Status</th></tr></thead>
+                    <tbody>
+                        {% for task in tasks %}
+                        <tr data-status="{{ task.status|default:'pending' }}">
+                            <td>{{ task.title }}</td>
+                            <td>
+                                <div class="emp-cell">
+                                    <div class="emp-avatar">{{ task.staff.name|first|upper }}</div>
+                                    {{ task.staff.name }}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge {% if task.status == 'completed' %}badge-completed{% else %}badge-pending{% endif %}">
+                                    {{ task.status|default:"pending"|title }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3"><div class="empty"><i class="fas fa-check-circle"></i><p>No tasks available</p></div></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAYROLL PANEL -->
+    <div class="panel" id="panel-payroll">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-money-bill-wave"></i> Payroll</h1>
+                <p>Employee salary, bonus, and deduction management</p>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-wallet"></i></div>
+                <div><div class="stat-number" id="totalNetPay">—</div><div class="stat-label">Total Net Pay</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon amber"><i class="fas fa-gift"></i></div>
+                <div><div class="stat-number" id="totalBonus">—</div><div class="stat-label">Total Bonuses</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon red"><i class="fas fa-minus-circle"></i></div>
+                <div><div class="stat-number" id="totalDeductions">—</div><div class="stat-label">Total Deductions</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+                <div><div class="stat-number">{{ payroll|length }}</div><div class="stat-label">On Payroll</div></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-table"></i> Payroll Details</div>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <table class="data-table" id="payrollTable">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Role</th>
+                            <th>Salary</th>
+                            <th>Bonus</th>
+                            <th>Deduction</th>
+                            <th>Net Pay</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in payroll %}
+                        <tr data-net="{{ p.net }}" data-bonus="{{ p.bonus|default:0 }}" data-deduction="{{ p.deduction|default:0 }}">
+                            <td>
+                                <div class="emp-cell">
+                                    <div class="emp-avatar">{{ p.name|first|upper }}</div>
+                                    {{ p.name }}
+                                </div>
+                            </td>
+                            <td><span class="badge badge-role">{{ p.role }}</span></td>
+                            <td>{% if p.salary %}{{ p.salary }}{% else %}<span class="salary-unset">Not set</span>{% endif %}</td>
+                            <td>{{ p.bonus|default:"0" }}</td>
+                            <td>{{ p.deduction|default:"0" }}</td>
+                            <td><span class="net-pay">{{ p.net }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6"><div class="empty"><i class="fas fa-file-invoice-dollar"></i><p>No payroll data available</p></div></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- ADD EMPLOYEE MODAL -->
+<div class="modal-backdrop" id="addEmployeeModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span><i class="fas fa-user-plus"></i> Add Employee</span>
+            <button class="modal-close" onclick="closeModal('addEmployeeModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Full Name *</label>
+                    <input type="text" id="empName" class="form-control" placeholder="Employee name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Role *</label>
+                    <input type="text" id="empRole" class="form-control" placeholder="e.g., Receptionist">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Department *</label>
+                <select id="empDept" class="form-control">
+                    {% for emp in employees %}
+                    <option value="{{ emp.department.id }}">{{ emp.department.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('addEmployeeModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="toast('Employee added successfully!'); closeModal('addEmployeeModal')">
+                <i class="fas fa-save"></i> Save Employee
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+    function toast(msg, type = 'success') {
+        const stack = document.getElementById('toastStack');
+        const el = document.createElement('div');
+        el.className = `toast${type === 'error' ? ' error' : ''}`;
+        el.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${msg}`;
+        stack.appendChild(el);
+        setTimeout(() => el.remove(), 3500);
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    function openModal(id)  { document.getElementById(id).classList.add('open'); }
+
+    function switchPanel(name) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.getElementById(`panel-${name}`).classList.add('active');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        const btn = document.querySelector(`.nav-btn[data-panel="${name}"]`);
+        if (btn) btn.classList.add('active');
+    }
+
+    function filterRows(tableId, filter, btn, attr) {
+        document.querySelectorAll(`#${tableId} tbody tr[data-${attr}]`).forEach(row => {
+            const val = (row.dataset[attr] || '').toLowerCase();
+            row.style.display = (filter === 'all' || val.includes(filter)) ? '' : 'none';
+        });
+        const barId = tableId === 'empTable' ? 'empFilterBar'
+                    : tableId === 'shiftTable' ? 'shiftFilterBar'
+                    : 'taskFilterBar';
+        document.querySelectorAll(`#${barId} .tab-btn`).forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+    }
+
+    function computeShiftCounts() {
+        let m = 0, e = 0, n = 0;
+        document.querySelectorAll('#shiftTable tbody tr[data-shift]').forEach(r => {
+            const s = r.dataset.shift;
+            if (s === 'morning') m++;
+            else if (s === 'evening') e++;
+            else n++;
+        });
+        const mc = document.getElementById('morningCount');
+        const ec = document.getElementById('eveningCount');
+        const nc = document.getElementById('nightCount');
+        if (mc) mc.textContent = m;
+        if (ec) ec.textContent = e;
+        if (nc) nc.textContent = n;
+    }
+
+    function computeTaskCounts() {
+        let pending = 0, completed = 0;
+        document.querySelectorAll('#taskTable tbody tr[data-status]').forEach(r => {
+            r.dataset.status === 'completed' ? completed++ : pending++;
+        });
+        const pc = document.getElementById('pendingTaskCount');
+        const cc = document.getElementById('completedTaskCount');
+        if (pc) pc.textContent = pending;
+        if (cc) cc.textContent = completed;
+    }
+
+    function computePayrollTotals() {
+        let net = 0, bonus = 0, ded = 0;
+        document.querySelectorAll('#payrollTable tbody tr[data-net]').forEach(r => {
+            net   += parseFloat(r.dataset.net)        || 0;
+            bonus += parseFloat(r.dataset.bonus)      || 0;
+            ded   += parseFloat(r.dataset.deduction)  || 0;
+        });
+        const fmt = v => v.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+        const tn = document.getElementById('totalNetPay');
+        const tb = document.getElementById('totalBonus');
+        const td = document.getElementById('totalDeductions');
+        if (tn) tn.textContent = fmt(net);
+        if (tb) tb.textContent = fmt(bonus);
+        if (td) td.textContent = fmt(ded);
+    }
+
+    // Event listeners
+    document.querySelectorAll('.nav-btn[data-panel]').forEach(btn => {
+        btn.addEventListener('click', () => switchPanel(btn.dataset.panel));
+    });
+
+    document.getElementById('menuBtn').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.toggle('open');
+    });
+
+    document.querySelectorAll('.modal-backdrop').forEach(bd => {
+        bd.addEventListener('click', e => { if (e.target === bd) bd.classList.remove('open'); });
+    });
+
+    // Init
+    computeShiftCounts();
+    computeTaskCounts();
+    computePayrollTotals();
+
+    console.log('HR dashboard loaded successfully');
+</script>
+</body>
+</html>

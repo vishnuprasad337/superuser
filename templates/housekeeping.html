@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Housekeeping Dashboard | Hotel ERP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* [All CSS styles remain the same as in your code] */
+        :root {
+            --navy: #0f1f3d;
+            --blue: #1a56db;
+            --blue-light: #3b82f6;
+            --accent: #f59e0b;
+            --green: #10b981;
+            --red: #ef4444;
+            --purple: #7c3aed;
+            --surface: #ffffff;
+            --surface-2: #f8fafc;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --sidebar-w: 270px;
+            --radius: 12px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+            --shadow: 0 4px 16px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,0.12);
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--surface-2); color: var(--text); min-height: 100vh; }
+
+        .sidebar { position: fixed; left: 0; top: 0; width: var(--sidebar-w); height: 100vh; background: var(--navy); display: flex; flex-direction: column; z-index: 100; overflow-y: auto; }
+        .sidebar-brand { padding: 22px 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .brand-logo { display: flex; align-items: center; gap: 10px; }
+        .brand-icon { width: 36px; height: 36px; background: var(--blue); border-radius: 9px; display: grid; place-items: center; color: white; font-size: 16px; }
+        .brand-name { font-size: 0.95rem; font-weight: 800; color: white; }
+        .brand-sub { font-size: 0.65rem; color: rgba(255,255,255,0.45); }
+        .sidebar-nav { flex: 1; padding: 14px 10px; }
+        .nav-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.3); padding: 12px 10px 6px; }
+        .nav-btn { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 9px; cursor: pointer; color: rgba(255,255,255,0.6); font-size: 0.83rem; font-weight: 500; transition: all 0.18s; border: none; background: transparent; width: 100%; text-align: left; font-family: inherit; }
+        .nav-btn i { width: 18px; }
+        .nav-btn:hover { background: rgba(255,255,255,0.07); color: white; }
+        .nav-btn.active { background: var(--blue); color: white; }
+        .sidebar-footer { padding: 14px 10px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.7rem; color: rgba(255,255,255,0.25); text-align: center; line-height: 1.5; }
+
+        .main { margin-left: var(--sidebar-w); min-height: 100vh; padding: 24px; }
+        .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+        .topbar-left h1 { font-size: 1.5rem; font-weight: 800; }
+        .topbar-left p { font-size: 0.82rem; color: var(--text-muted); margin-top: 2px; }
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+        .stat-card { background: var(--surface); border-radius: var(--radius); padding: 18px 20px; border: 1px solid var(--border); display: flex; align-items: center; gap: 14px; transition: transform 0.18s; cursor: pointer; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+        .stat-icon { width: 46px; height: 46px; border-radius: 11px; display: grid; place-items: center; font-size: 1.1rem; }
+        .stat-icon.green { background: #ecfdf5; color: var(--green); }
+        .stat-icon.amber { background: #fffbeb; color: var(--accent); }
+        .stat-icon.purple { background: #f5f3ff; color: var(--purple); }
+        .stat-icon.blue { background: #eff6ff; color: var(--blue); }
+        .stat-number { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); }
+
+        .card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 20px; }
+        .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+        .card-title { font-size: 0.92rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .card-body { padding: 20px; }
+
+        .room-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+        .room-card { border: 2px solid var(--border); border-radius: var(--radius); padding: 16px; transition: all 0.2s; cursor: pointer; background: var(--surface); }
+        .room-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+        .room-card.clean { border-left: 4px solid var(--green); }
+        .room-card.dirty { border-left: 4px solid var(--red); }
+        .room-card.maintenance { border-left: 4px solid var(--accent); background: #fffbeb; }
+        .room-number { font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; }
+        .room-status { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; margin-top: 8px; }
+        .status-clean { background: #ecfdf5; color: #065f46; }
+        .status-dirty { background: #fef2f2; color: #b91c1c; }
+        .status-maintenance { background: #fffbeb; color: #b45309; }
+        .room-actions { margin-top: 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+
+        .task-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--border); }
+        .task-item:last-child { border-bottom: none; }
+        .task-info { flex: 1; }
+        .task-title { font-weight: 600; font-size: 0.85rem; }
+        .task-desc { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+        .task-status { font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; display: inline-block; }
+        .task-status.pending { background: #fef2f2; color: #b91c1c; }
+        .task-status.completed { background: #ecfdf5; color: #065f46; }
+
+        .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+        .inventory-item { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; background: var(--surface); transition: all 0.2s; }
+        .inventory-item:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+        .item-name { font-weight: 700; font-size: 1rem; margin-bottom: 8px; color: var(--text); }
+        .item-quantity { font-size: 0.85rem; color: var(--text); margin-bottom: 4px; }
+        .item-category { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 8px; }
+        .low-stock { color: var(--red); font-weight: 600; font-size: 0.7rem; margin-top: 6px; padding: 4px 8px; background: #fef2f2; border-radius: 6px; display: inline-block; }
+
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.18s; font-family: inherit; }
+        .btn-primary { background: var(--blue); color: white; }
+        .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
+        .btn-success { background: var(--green); color: white; }
+        .btn-success:hover { background: #059669; transform: translateY(-1px); }
+        .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+        .btn-outline:hover { background: var(--surface-2); border-color: var(--blue-light); }
+        .btn-sm { padding: 5px 12px; font-size: 0.74rem; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+        .form-control { width: 100%; padding: 9px 13px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.83rem; font-family: inherit; background: var(--surface); }
+        .form-control:focus { outline: none; border-color: var(--blue-light); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 200; display: none; place-items: center; }
+        .modal-backdrop.open { display: grid; }
+        .modal { background: var(--surface); border-radius: 16px; width: 100%; max-width: 500px; box-shadow: var(--shadow-lg); animation: modalIn 0.2s ease; }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .modal-header { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header span { font-size: 1.1rem; font-weight: 700; }
+        .modal-close { width: 30px; height: 30px; border-radius: 8px; border: none; background: var(--surface-2); cursor: pointer; font-size: 1.2rem; transition: all 0.15s; }
+        .modal-close:hover { background: #fee2e2; color: var(--red); }
+        .modal-body { padding: 22px; }
+        .modal-footer { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+
+        .toast-stack { position: fixed; top: 20px; right: 20px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+        .toast { padding: 12px 16px; border-radius: 10px; font-size: 0.82rem; font-weight: 500; background: var(--green); color: white; box-shadow: var(--shadow-lg); animation: slideIn 0.3s ease; display: flex; align-items: center; gap: 10px; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        .toast.error { background: var(--red); }
+        
+        .menu-btn { display: none; position: fixed; top: 14px; left: 14px; z-index: 150; background: var(--navy); color: white; border: none; width: 38px; height: 38px; border-radius: 9px; cursor: pointer; font-size: 1rem; }
+        .tab-bar { display: flex; gap: 2px; background: var(--surface-2); border-radius: 8px; padding: 3px; }
+        .tab-btn { padding: 6px 14px; border-radius: 6px; border: none; background: transparent; font-size: 0.78rem; font-weight: 600; cursor: pointer; color: var(--text-muted); transition: all 0.15s; }
+        .tab-btn.active { background: var(--surface); color: var(--blue); box-shadow: var(--shadow-sm); }
+        .empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+        .empty i { font-size: 2rem; margin-bottom: 10px; opacity: 0.5; }
+        
+        @media (max-width: 900px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; padding: 16px; padding-top: 60px; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .menu-btn { display: flex; align-items: center; justify-content: center; }
+        }
+        
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+<button class="menu-btn" id="menuBtn"><i class="fas fa-bars"></i></button>
+
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-logo">
+            <div class="brand-icon"><i class="fas fa-hotel"></i></div>
+            <div>
+                <div class="brand-name">Hotel ERP</div>
+                <div class="brand-sub">Housekeeping</div>
+            </div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-label">Housekeeping</div>
+        <button class="nav-btn active" data-panel="housekeeping"><i class="fas fa-broom"></i> Room Status</button>
+        <button class="nav-btn" data-panel="tasks"><i class="fas fa-tasks"></i> My Tasks</button>
+        <button class="nav-btn" data-panel="inventory"><i class="fas fa-boxes"></i> Inventory</button>
+        <button class="nav-btn" data-panel="maintenance"><i class="fas fa-tools"></i> Report Issue</button>
+    </nav>
+    <div class="sidebar-footer">
+        <i class="fas fa-user-circle"></i> {{ staff.name }}<br>
+        <i class="fas fa-building"></i> {{ hotel.hotel_name }}<br>
+        <i class="fas fa-id-badge"></i> Housekeeping Staff
+    </div>
+</aside>
+
+<main class="main">
+    <!-- Housekeeping Panel -->
+    <div class="panel active" id="panel-housekeeping">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-broom"></i> Housekeeping Dashboard</h1>
+                <p>Welcome back, {{ staff.name }}! Manage room status, cleaning tasks, and maintenance</p>
+            </div>
+            <div>
+                <button class="btn btn-outline btn-sm" onclick="switchPanel('maintenance')"><i class="fas fa-tools"></i> Report Issue</button>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check-circle"></i></div><div><div class="stat-number" id="cleanCount">{{ clean_rooms|default:0 }}</div><div class="stat-label">Clean Rooms</div></div></div>
+            <div class="stat-card"><div class="stat-icon amber"><i class="fas fa-broom"></i></div><div><div class="stat-number" id="dirtyCount">{{ dirty_rooms|default:0 }}</div><div class="stat-label">Dirty Rooms</div></div></div>
+            <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-tools"></i></div><div><div class="stat-number" id="maintenanceCount">{{ maintenance_rooms|default:0 }}</div><div class="stat-label">Maintenance</div></div></div>
+            <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-tasks"></i></div><div><div class="stat-number" id="pendingTaskCount">{{ pending_tasks|default:0 }}</div><div class="stat-label">Pending Tasks</div></div></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-door-open"></i> Room Status</div>
+                <div class="tab-bar" id="roomFilterBar">
+                    <button class="tab-btn active" onclick="filterRooms('all', this)">All</button>
+                    <button class="tab-btn" onclick="filterRooms('clean', this)">Clean</button>
+                    <button class="tab-btn" onclick="filterRooms('dirty', this)">Dirty</button>
+                    <button class="tab-btn" onclick="filterRooms('maintenance', this)">Maintenance</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="roomsGrid" class="room-grid">
+                    {% for room in rooms %}
+                    <div class="room-card {{ room.status }}" data-status="{{ room.status }}" data-room="{{ room.number }}" onclick="openRoomModal('{{ room.number }}', '{{ room.status }}', '{{ room.notes|escapejs }}')">
+                        <div class="room-number">Room {{ room.number }}</div>
+                        <div class="room-status status-{{ room.status }}">{{ room.status|title }}</div>
+                        {% if room.notes %}<div style="font-size:0.65rem; color:var(--text-muted); margin-top:6px;"><i class="fas fa-pen"></i> {{ room.notes|truncatechars:30 }}</div>{% endif %}
+                        <div class="room-actions">
+                            <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); openRoomModal('{{ room.number }}', '{{ room.status }}', '{{ room.notes|escapejs }}')"><i class="fas fa-edit"></i> Update</button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty" style="grid-column:1/-1"><i class="fas fa-door-closed"></i><p>No rooms found</p></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-clipboard-list"></i> My Assigned Tasks</div>
+            </div>
+            <div class="card-body">
+                <div id="housekeepingTasks">
+                    {% for task in tasks %}
+                    <div class="task-item" data-task-id="{{ task.id }}">
+                        <div class="task-info">
+                            <div class="task-title">{{ task.title }}</div>
+                            <div class="task-desc">{{ task.description|default:"No description" }}</div>
+                            {% if task.room %}<div class="task-desc"><i class="fas fa-door-open"></i> Room {{ task.room }}</div>{% endif %}
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="task-status {{ task.status }}">{{ task.status|default:"pending"|title }}</span>
+                            {% if task.status != "completed" %}
+                            <button class="btn btn-sm btn-success" onclick="completeTask('{{ task.id }}', this)"><i class="fas fa-check"></i> Complete</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty"><i class="fas fa-check-circle"></i><p>No tasks assigned</p></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks Panel -->
+    <div class="panel" id="panel-tasks">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-tasks"></i> My Tasks</h1>
+                <p>Track and complete your assigned duties</p>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="switchPanel('housekeeping')"><i class="fas fa-arrow-left"></i> Back</button>
+        </div>
+        <div class="card">
+            <div class="card-header"><div class="card-title">All Tasks</div></div>
+            <div class="card-body">
+                <div id="allTasksList">
+                    {% for task in all_tasks %}
+                    <div class="task-item" data-task-id="{{ task.id }}">
+                        <div class="task-info">
+                            <div class="task-title">{{ task.title }}</div>
+                            <div class="task-desc">{{ task.description|default:"No description" }}</div>
+                            {% if task.room %}<div class="task-desc"><i class="fas fa-door-open"></i> Room {{ task.room }}</div>{% endif %}
+                            <div class="task-desc"><i class="fas fa-calendar"></i> Assigned: {{ task.created_at|date:"M d, Y"|default:"Recently" }}</div>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="task-status {{ task.status }}">{{ task.status|default:"pending"|title }}</span>
+                            {% if task.status != "completed" %}
+                            <button class="btn btn-sm btn-success" onclick="completeTask('{{ task.id }}', this)"><i class="fas fa-check"></i> Complete</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty"><i class="fas fa-check-circle"></i><p>No tasks assigned to you</p></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Panel -->
+    <div class="panel" id="panel-inventory">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-boxes"></i> Inventory Management</h1>
+                <p>Track cleaning supplies and housekeeping inventory</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openInventoryModal()"><i class="fas fa-plus"></i> Add Item</button>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-box"></i></div><div><div class="stat-number">{{ total_items|default:0 }}</div><div class="stat-label">Total Items</div></div></div>
+            <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check-circle"></i></div><div><div class="stat-number">{{ in_stock_items|default:0 }}</div><div class="stat-label">In Stock</div></div></div>
+            <div class="stat-card"><div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-number">{{ low_stock_items|default:0 }}</div><div class="stat-label">Low Stock</div></div></div>
+            <div class="stat-card"><div class="stat-icon amber"><i class="fas fa-chart-line"></i></div><div><div class="stat-number">{{ categories_count|default:0 }}</div><div class="stat-label">Categories</div></div></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-clipboard-list"></i> Inventory Items</div>
+                <div class="tab-bar" id="inventoryFilterBar">
+                    <button class="tab-btn active" onclick="filterInventory('all', this)">All</button>
+                    <button class="tab-btn" onclick="filterInventory('cleaning', this)">Cleaning</button>
+                    <button class="tab-btn" onclick="filterInventory('linen', this)">Linen</button>
+                    <button class="tab-btn" onclick="filterInventory('amenities', this)">Amenities</button>
+                    <button class="tab-btn" onclick="filterInventory('equipment', this)">Equipment</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="inventoryGrid" class="inventory-grid">
+                    {% for item in inventory_items %}
+                    <div class="inventory-item" data-category="{{ item.category }}" data-id="{{ item.id }}">
+                        <div class="item-name">{{ item.name }}</div>
+                        <div class="item-quantity"><strong>Quantity:</strong> {{ item.quantity }} {{ item.unit }}</div>
+                        <div class="item-category"><i class="fas fa-tag"></i> {{ item.category|title }}</div>
+                        {% if item.quantity <= item.reorder_level %}
+                        <div class="low-stock"><i class="fas fa-exclamation-triangle"></i> Low Stock! Reorder needed (Min: {{ item.reorder_level }})</div>
+                        {% endif %}
+                        
+                    </div>
+                    {% empty %}
+                    <div class="empty" style="grid-column:1/-1"><i class="fas fa-box-open"></i><p>No inventory items found</p><button class="btn btn-sm btn-primary" onclick="openInventoryModal()" style="margin-top: 10px;"><i class="fas fa-plus"></i> Add First Item</button></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Maintenance Panel -->
+    <div class="panel" id="panel-maintenance">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h1><i class="fas fa-tools"></i> Report Issue</h1>
+                <p>Submit maintenance requests</p>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="switchPanel('housekeeping')"><i class="fas fa-arrow-left"></i> Back</button>
+        </div>
+        <div class="card">
+            <div class="card-header"><div class="card-title">New Maintenance Request</div></div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">Room Number *</label>
+                    <input type="text" id="issueRoom" class="form-control" placeholder="e.g., 101">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Issue Type *</label>
+                    <select id="issueType" class="form-control">
+                        <option>Plumbing</option>
+                        <option>Electrical</option>
+                        <option>Furniture</option>
+                        <option>HVAC</option>
+                        <option>Cleaning</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description *</label>
+                    <textarea id="issueDesc" class="form-control" rows="3" placeholder="Describe the issue in detail..."></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="submitMaintenance(event)"><i class="fas fa-paper-plane"></i> Submit Report</button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Modals -->
+<div class="modal-backdrop" id="roomStatusModal"><div class="modal"><div class="modal-header"><span><i class="fas fa-door-open"></i> Update Room Status</span><button class="modal-close" onclick="closeModal('roomStatusModal')">&times;</button></div><div class="modal-body"><input type="hidden" id="modalRoomNumber"><p><strong>Room <span id="modalRoomNumDisplay"></span></strong></p><div class="form-group"><label class="form-label">Status</label><select id="roomStatusSelect" class="form-control"><option value="clean">Clean</option><option value="dirty">Dirty</option><option value="maintenance">Maintenance Required</option></select></div><div class="form-group"><label class="form-label">Notes</label><textarea id="roomNotes" class="form-control" rows="2" placeholder="Optional notes..."></textarea></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('roomStatusModal')">Cancel</button><button class="btn btn-primary" onclick="updateRoomStatus()">Update Status</button></div></div></div>
+
+<div class="modal-backdrop" id="inventoryModal"><div class="modal"><div class="modal-header"><span><i class="fas fa-box"></i> Add/Update Inventory</span><button class="modal-close" onclick="closeModal('inventoryModal')">&times;</button></div><div class="modal-body"><input type="hidden" id="inventoryItemId"><div class="form-group"><label class="form-label">Item Name *</label><input type="text" id="inventoryName" class="form-control" placeholder="e.g., Shampoo, Towels, Detergent"></div><div class="form-group"><label class="form-label">Category *</label><select id="inventoryCategory" class="form-control"><option value="cleaning">Cleaning Supplies</option><option value="linen">Linen & Towels</option><option value="amenities">Guest Amenities</option><option value="equipment">Equipment</option></select></div><div class="form-group"><label class="form-label">Quantity *</label><input type="number" id="inventoryQuantity" class="form-control" placeholder="Quantity" min="0" value="0"></div><div class="form-group"><label class="form-label">Unit</label><input type="text" id="inventoryUnit" class="form-control" placeholder="e.g., pieces, bottles, packs" value="pieces"></div><div class="form-group"><label class="form-label">Reorder Level</label><input type="number" id="inventoryReorderLevel" class="form-control" placeholder="Alert when quantity below" value="10" min="0"></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('inventoryModal')">Cancel</button><button class="btn btn-primary" id="saveInventoryBtn" onclick="saveInventoryItem(event)">Save Item</button></div></div></div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script>
+function toast(msg, type = 'success') {
+    const stack = document.getElementById('toastStack');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${msg}`;
+    stack.appendChild(el);
+    setTimeout(() => el.remove(), 3500);
+}
+
+function closeModal(id) { 
+    const modal = document.getElementById(id);
+    if (modal) modal.classList.remove('open'); 
+}
+
+function openModal(id) { 
+    const modal = document.getElementById(id);
+    if (modal) modal.classList.add('open'); 
+}
+
+function getCsrfToken() {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, 10) === ('csrftoken=')) {
+                cookieValue = decodeURIComponent(cookie.substring(10));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function filterRooms(filter, btn) {
+    const rooms = document.querySelectorAll('.room-card');
+    rooms.forEach(room => {
+        const status = room.dataset.status;
+        room.style.display = (filter === 'all' || status === filter) ? 'block' : 'none';
+    });
+    document.querySelectorAll('#roomFilterBar .tab-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+}
+
+function filterInventory(category, btn) {
+    const items = document.querySelectorAll('.inventory-item');
+    items.forEach(item => {
+        const itemCategory = item.dataset.category;
+        item.style.display = (category === 'all' || itemCategory === category) ? 'block' : 'none';
+    });
+    document.querySelectorAll('#inventoryFilterBar .tab-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+}
+
+function openRoomModal(roomNumber, currentStatus, notes) {
+    document.getElementById('modalRoomNumber').value = roomNumber;
+    document.getElementById('modalRoomNumDisplay').textContent = roomNumber;
+    document.getElementById('roomStatusSelect').value = currentStatus;
+    document.getElementById('roomNotes').value = notes || '';
+    openModal('roomStatusModal');
+}
+
+function openInventoryModal() {
+    document.getElementById('inventoryItemId').value = '';
+    document.getElementById('inventoryName').value = '';
+    document.getElementById('inventoryCategory').value = 'cleaning';
+    document.getElementById('inventoryQuantity').value = '';
+    document.getElementById('inventoryUnit').value = 'pieces';
+    document.getElementById('inventoryReorderLevel').value = '10';
+    openModal('inventoryModal');
+}
+
+function editInventoryItem(id, name, category, quantity, unit, reorderLevel) {
+    document.getElementById('inventoryItemId').value = id;
+    document.getElementById('inventoryName').value = name;
+    document.getElementById('inventoryCategory').value = category;
+    document.getElementById('inventoryQuantity').value = quantity;
+    document.getElementById('inventoryUnit').value = unit;
+    document.getElementById('inventoryReorderLevel').value = reorderLevel;
+    openModal('inventoryModal');
+}
+
+async function saveInventoryItem(event) {
+    // Prevent default form submission
+    if (event) event.preventDefault();
+    
+    const id = document.getElementById('inventoryItemId').value;
+    const name = document.getElementById('inventoryName').value.trim();
+    const category = document.getElementById('inventoryCategory').value;
+    const quantity = parseInt(document.getElementById('inventoryQuantity').value);
+    const unit = document.getElementById('inventoryUnit').value.trim();
+    const reorderLevel = parseInt(document.getElementById('inventoryReorderLevel').value);
+    
+    if (!name) { toast('Please enter item name', 'error'); return; }
+    if (isNaN(quantity)) { toast('Please enter valid quantity', 'error'); return; }
+    if (quantity < 0) { toast('Quantity cannot be negative', 'error'); return; }
+    
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('category', category);
+    formData.append('quantity', quantity);
+    formData.append('unit', unit);
+    formData.append('reorder_level', reorderLevel);
+    
+    const url = id ? `/update-inventory/${id}/` : '/add-inventory/';
+    
+    const saveBtn = document.getElementById('saveInventoryBtn');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="spinner"></span> Saving...';
+    
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': getCsrfToken() }
+        });
+        const data = await response.json();
+        if (response.ok) {
+            toast(id ? 'Inventory updated successfully!' : 'Inventory item added successfully!');
+            closeModal('inventoryModal');
+            setTimeout(() => window.location.reload(), 500);
+        } else {
+            toast(data.error || 'Failed to save inventory item', 'error');
+        }
+    } catch (error) {
+        console.error('Save inventory error:', error);
+        toast('Network error: ' + error.message, 'error');
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalText;
+    }
+}
+
+async function useInventoryItem(itemId, itemName) {
+    const quantity = prompt(`How many ${itemName} to use?`, '1');
+    if (quantity === null) return;
+    
+    const useQty = parseInt(quantity);
+    if (isNaN(useQty) || useQty <= 0) {
+        toast('Please enter a valid quantity', 'error');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('item_id', itemId);
+    formData.append('quantity', useQty);
+    
+    try {
+        const response = await fetch('/use-inventory/', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': getCsrfToken() }
+        });
+        const data = await response.json();
+        if (response.ok) {
+            toast(`Used ${useQty} ${itemName}(s)`);
+            setTimeout(() => window.location.reload(), 500);
+        } else {
+            toast(data.error || 'Failed to use inventory', 'error');
+        }
+    } catch (error) {
+        console.error('Use inventory error:', error);
+        toast('Network error: ' + error.message, 'error');
+    }
+}
+
+async function updateRoomStatus() {
+    const roomNumber = document.getElementById('modalRoomNumber').value;
+    const status = document.getElementById('roomStatusSelect').value;
+    const notes = document.getElementById('roomNotes').value;
+    
+    const formData = new FormData();
+    formData.append('room_number', roomNumber);
+    formData.append('status', status);
+    formData.append('notes', notes);
+    
+    try {
+        const response = await fetch('/update-room-status/', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': getCsrfToken() }
+        });
+        const data = await response.json();
+        if (response.ok) {
+            toast(`Room ${roomNumber} updated to ${status}`);
+            closeModal('roomStatusModal');
+            setTimeout(() => window.location.reload(), 500);
+        } else {
+            toast(data.error || 'Failed to update', 'error');
+        }
+    } catch (error) {
+        console.error('Update room status error:', error);
+        toast('Network error: ' + error.message, 'error');
+    }
+}
+
+async function completeTask(taskId, btn) {
+    btn.disabled = true;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner"></span>';
+    
+    const formData = new FormData();
+    formData.append('task_id', taskId);
+    
+    try {
+        const response = await fetch('/complete-housekeeping-task/', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': getCsrfToken() }
+        });
+        const data = await response.json();
+        if (response.ok) {
+            toast('Task completed!');
+            const taskDiv = btn.closest('.task-item');
+            const statusSpan = taskDiv.querySelector('.task-status');
+            statusSpan.textContent = 'Completed';
+            statusSpan.className = 'task-status completed';
+            btn.remove();
+            
+            const pendingCountElem = document.getElementById('pendingTaskCount');
+            if (pendingCountElem) {
+                const currentCount = parseInt(pendingCountElem.textContent);
+                if (!isNaN(currentCount)) {
+                    pendingCountElem.textContent = currentCount - 1;
+                }
+            }
+        } else {
+            toast(data.error || 'Failed to complete', 'error');
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    } catch (error) {
+        console.error('Complete task error:', error);
+        toast('Network error: ' + error.message, 'error');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+
+async function submitMaintenance(event) {
+    if (event) event.preventDefault();
+    
+    const room = document.getElementById('issueRoom').value.trim();
+    const issueType = document.getElementById('issueType').value;
+    const description = document.getElementById('issueDesc').value.trim();
+    
+    if (!room) { toast('Please enter room number', 'error'); return; }
+    if (!description) { toast('Please describe the issue', 'error'); return; }
+    
+    const formData = new FormData();
+    formData.append('room_number', room);
+    formData.append('issue_type', issueType);
+    formData.append('description', description);
+    
+    const submitBtn = event ? event.target : document.querySelector('#panel-maintenance .btn-primary');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner"></span> Submitting...';
+    
+    try {
+        const response = await fetch('/report-maintenance/', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': getCsrfToken() }
+        });
+        const data = await response.json();
+        if (response.ok) {
+            toast('Maintenance request submitted successfully!');
+            document.getElementById('issueRoom').value = '';
+            document.getElementById('issueDesc').value = '';
+            switchPanel('housekeeping');
+        } else {
+            toast(data.error || 'Failed to submit', 'error');
+        }
+    } catch (error) {
+        console.error('Submit maintenance error:', error);
+        toast('Network error: ' + error.message, 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
+}
+
+function switchPanel(panelName) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    const targetPanel = document.getElementById(`panel-${panelName}`);
+    if (targetPanel) targetPanel.classList.add('active');
+    
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.querySelector(`.nav-btn[data-panel="${panelName}"]`);
+    if (activeBtn) activeBtn.classList.add('active');
+}
+
+// Event Listeners
+document.querySelectorAll('.nav-btn[data-panel]').forEach(btn => {
+    btn.addEventListener('click', () => switchPanel(btn.dataset.panel));
+});
+
+document.getElementById('menuBtn').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('open');
+});
+
+document.querySelectorAll('.modal-backdrop').forEach(bd => {
+    bd.addEventListener('click', e => { 
+        if (e.target === bd) bd.classList.remove('open'); 
+    });
+});
+
+// Initialization
+console.log('Housekeeping dashboard loaded successfully');
+</script>
+</body>
+</html>
