@@ -38,7 +38,6 @@ body {
   min-height: 100vh;
 }
 
-/* Sidebar Styles - Matching Dashboard Design */
 .sidebar {
   position: fixed;
   left: 0;
@@ -52,7 +51,6 @@ body {
   overflow-y: auto;
   transition: transform 0.3s ease;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.1) transparent;
 }
 
 .sidebar-brand {
@@ -156,14 +154,12 @@ body {
   text-align: center;
 }
 
-/* Main Content */
 .main-content {
   margin-left: var(--sidebar-w);
   min-height: 100vh;
   transition: margin-left 0.3s ease;
 }
 
-/* Topbar */
 .topbar {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px 28px;
@@ -214,14 +210,12 @@ body {
   gap: 8px;
 }
 
-/* Wrap Container */
 .wrap {
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 28px 28px 28px;
 }
 
-/* Tabs */
 .tabs {
   display: flex;
   gap: 8px;
@@ -259,11 +253,9 @@ body {
   box-shadow: 0 3px 12px rgba(102,126,234,0.3);
 }
 
-/* Sections */
 .section { display: none; }
 .section.active { display: block; }
 
-/* Form Panel */
 .form-panel {
   background: white;
   border: 1px solid var(--border);
@@ -372,7 +364,6 @@ body {
   min-height: 24px;
 }
 
-/* View Header */
 .view-header {
   display: flex;
   align-items: center;
@@ -428,7 +419,6 @@ body {
   color: white;
 }
 
-/* Room Type Section */
 .room-type-section {
   background: white;
   border: 1px solid var(--border);
@@ -480,6 +470,7 @@ body {
   display: flex;
   gap: 12px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .rtype-badge {
@@ -502,7 +493,6 @@ body {
   border: 1px solid #fecaca; 
 }
 
-/* Legend */
 .legend {
   display: flex;
   gap: 20px;
@@ -528,9 +518,12 @@ body {
 }
 
 .legend-box.green { background: #10b981; }
-.legend-box.red   { background: #ef4444; }
+.legend-box.red { background: #ef4444; }
+.legend-box.yellow { background: #eab308; }
+.legend-box.blue { background: #3b82f6; }
+.legend-box.orange { background: #f97316; }
+.legend-box.gray { background: #6b7280; }
 
-/* Room Boxes Grid */
 .room-boxes {
   padding: 20px 24px;
   display: flex;
@@ -539,8 +532,8 @@ body {
 }
 
 .room-box {
-  width: 60px;
-  height: 60px;
+  width: 70px;
+  height: 70px;
   border-radius: 12px;
   display: flex;
   flex-direction: column;
@@ -573,17 +566,40 @@ body {
   box-shadow: 0 2px 8px rgba(239,68,68,0.3);
 }
 
+.room-box.dirty {
+  background: linear-gradient(135deg, #eab308, #ca8a04);
+  box-shadow: 0 2px 8px rgba(234,179,8,0.3);
+}
+
+.room-box.reserved {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+}
+
+.room-box.cleaning {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  box-shadow: 0 2px 8px rgba(249,115,22,0.3);
+}
+
+.room-box.maintenance {
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  box-shadow: 0 2px 8px rgba(107,114,128,0.3);
+}
+
 .room-box .box-icon {
   font-size: 1.1rem;
   line-height: 1;
 }
 
 .room-box .box-num {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 700;
   color: rgba(255,255,255,0.95);
   margin-top: 4px;
   line-height: 1;
+  text-align: center;
+  word-break: break-word;
+  max-width: 65px;
 }
 
 .empty-state {
@@ -605,7 +621,6 @@ body {
   font-size: 0.85rem; 
 }
 
-/* Menu Toggle for Mobile */
 .menu-toggle {
   display: none;
   position: fixed;
@@ -645,8 +660,11 @@ body {
     padding: 0 15px 20px 15px;
   }
   .room-box {
-    width: 50px;
-    height: 50px;
+    width: 55px;
+    height: 55px;
+  }
+  .room-box .box-num {
+    font-size: 0.55rem;
   }
 }
 </style>
@@ -657,7 +675,6 @@ body {
   <i class="fas fa-bars"></i>
 </button>
 
-<!-- Sidebar Navigation - Matching Dashboard Design -->
 <div class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-logo">
@@ -695,9 +712,7 @@ body {
   </div>
 </div>
 
-<!-- Main Content -->
 <div class="main-content">
-  <!-- TOPBAR -->
   <div class="topbar">
     <div class="topbar-icon">🏨</div>
     <div class="topbar-text">
@@ -710,14 +725,11 @@ body {
   </div>
 
   <div class="wrap">
-
-    <!-- TABS -->
     <div class="tabs">
       <div class="tab active" onclick="showTab('add', this)">➕ Add Room Type</div>
       <div class="tab" onclick="showTab('view', this)">📋 View All Rooms</div>
     </div>
 
-    <!-- ADD ROOM SECTION -->
     <div id="add" class="section active">
       <div class="form-panel">
         <div class="form-panel-head">
@@ -733,7 +745,6 @@ body {
               <option value="Double">Double</option>
               <option value="Deluxe">Deluxe</option>
               <option value="Suite">Suite</option>
-              <option value="Presidential">Presidential Suite</option>
             </select>
           </div>
 
@@ -760,7 +771,6 @@ body {
       </div>
     </div>
 
-    <!-- VIEW ROOMS SECTION -->
     <div id="view" class="section">
       <div class="view-header">
         <div class="view-title">
@@ -778,12 +788,10 @@ body {
 
       <div id="roomList"></div>
     </div>
-
   </div>
 </div>
 
 <script>
-// Toggle sidebar for mobile
 const menuToggleBtn = document.getElementById('menuToggleBtn');
 const sidebar = document.getElementById('sidebar');
 
@@ -793,7 +801,6 @@ if (menuToggleBtn && sidebar) {
     sidebar.classList.toggle('open');
   });
   
-  // Close sidebar when clicking outside on mobile
   document.addEventListener('click', function(e) {
     if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
       if (!sidebar.contains(e.target) && e.target !== menuToggleBtn && !menuToggleBtn.contains(e.target)) {
@@ -803,20 +810,6 @@ if (menuToggleBtn && sidebar) {
   });
 }
 
-// Fetch hotel name
-function fetchHotelName() {
-  fetch("/get-room/?type=")
-    .then(res => res.json())
-    .then(data => {
-      if (data.hotel_name) {
-        document.getElementById("hotelNameDisplay").textContent = data.hotel_name;
-        document.getElementById("sidebarHotelName").textContent = data.hotel_name;
-      }
-    })
-    .catch(err => console.log('Hotel name fetch failed:', err));
-}
-
-// Filter chips
 let currentFilter = '';
 
 function setFilter(el, val) {
@@ -826,7 +819,6 @@ function setFilter(el, val) {
   loadRooms();
 }
 
-// Tab switching
 function showTab(tab, element) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -838,7 +830,6 @@ function showTab(tab, element) {
   }
 }
 
-// Add room
 function addRoom() {
   const roomType = document.getElementById("room_type").value;
   const price = document.getElementById("price").value;
@@ -879,6 +870,8 @@ function addRoom() {
       document.getElementById("price").value = "";
       document.getElementById("total_rooms").value = "";
       document.getElementById("description").value = "";
+      const viewTab = document.querySelector('.tab:last-child');
+      showTab('view', viewTab);
       loadRooms();
     } else {
       showMessage("❌ " + (data.error || "Failed to add room"), "error");
@@ -899,7 +892,6 @@ function showMessage(msg, type) {
   }, 3000);
 }
 
-// Load rooms
 function loadRooms() {
   const container = document.getElementById("roomList");
   container.innerHTML = '<div style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin"></i> Loading rooms...</div>';
@@ -924,27 +916,49 @@ function loadRooms() {
       let html = "";
       
       data.rooms.forEach((room, idx) => {
-        const total = parseInt(room.total_rooms) || 0;
-        const available = (room.available_rooms !== undefined) ? parseInt(room.available_rooms) : total;
-        const occupied = total - available;
+        const total = room.total_rooms;
+        const available = room.available_rooms;
+        const occupied = room.room_units.filter(u => u.status === "Occupied").length;
+        const dirty = room.room_units.filter(u => u.status === "Dirty").length;
+        const reserved = room.room_units.filter(u => u.status === "Reserved").length;
+        const cleaning = room.room_units.filter(u => u.status === "Cleaning").length;
         const allFull = available === 0;
         
         let boxesHtml = "";
-        for (let n = 1; n <= Math.min(total, 50); n++) { // Limit display to 50 rooms per type
-          const isOccupied = n > available;
-          boxesHtml += `
-            <div class="room-box ${isOccupied ? 'occupied' : 'available'}"
-                 style="animation-delay:${(n % 20) * 15}ms"
-                 title="Room ${n} — ${isOccupied ? 'Occupied' : 'Available'}">
-              <div class="box-icon">${isOccupied ? '🔴' : '🟢'}</div>
-              <div class="box-num">${n}</div>
-            </div>`;
-        }
         
-        if (total > 50) {
-          boxesHtml += `<div style="padding: 10px; text-align: center; width: 100%; color: var(--text-muted); font-size: 0.75rem;">
-            +${total - 50} more rooms
-          </div>`;
+        if (room.room_units && room.room_units.length > 0) {
+          room.room_units.forEach((unit, unitIndex) => {
+            let statusClass = "";
+            let statusIcon = "";
+            
+            if (unit.status === "Available") {
+              statusClass = "available";
+              statusIcon = "🟢";
+            } else if (unit.status === "Occupied") {
+              statusClass = "occupied";
+              statusIcon = "🔴";
+            } else if (unit.status === "Dirty") {
+              statusClass = "dirty";
+              statusIcon = "🟡";
+            } else if (unit.status === "Reserved") {
+              statusClass = "reserved";
+              statusIcon = "🔵";
+            } else if (unit.status === "Cleaning") {
+              statusClass = "cleaning";
+              statusIcon = "🟠";
+            } else {
+              statusClass = "maintenance";
+              statusIcon = "⚫";
+            }
+            
+            boxesHtml += `
+              <div class="room-box ${statusClass}"
+                   style="animation-delay:${(unitIndex % 20) * 15}ms"
+                   title="${unit.status_display}">
+                <div class="box-icon">${statusIcon}</div>
+                <div class="box-num">${unit.number}</div>
+              </div>`;
+          });
         }
         
         html += `
@@ -959,20 +973,19 @@ function loadRooms() {
                 ${allFull ? '🔴 Fully Booked' : `🟢 ${available} Available`}
               </span>
               <span style="font-size:0.7rem;color:var(--text-muted);font-weight:600;">
-                ${occupied}/${total} Occupied
+                🔴 ${occupied} | 🟡 ${dirty} | 🔵 ${reserved} | 🟠 ${cleaning}
               </span>
             </div>
           </div>
           
           <div class="legend">
-            <div class="legend-item">
-              <div class="legend-box green"></div> Available
-            </div>
-            <div class="legend-item">
-              <div class="legend-box red"></div> Occupied
-            </div>
+            <div class="legend-item"><div class="legend-box green"></div> Available</div>
+            <div class="legend-item"><div class="legend-box red"></div> Occupied</div>
+            <div class="legend-item"><div class="legend-box yellow"></div> Dirty</div>
+            <div class="legend-item"><div class="legend-box blue"></div> Reserved</div>
+            <div class="legend-item"><div class="legend-box orange"></div> Cleaning</div>
             ${room.description ? `
-            <div class="legend-item" style="margin-left:auto;font-style:italic;font-weight:400;">
+            <div class="legend-item" style="margin-left:auto;font-style:italic;">
               <i class="fas fa-info-circle"></i> ${escapeHtml(room.description.substring(0, 80))}${room.description.length > 80 ? '...' : ''}
             </div>` : ''}
           </div>
@@ -995,7 +1008,6 @@ function loadRooms() {
     });
 }
 
-// CSRF token helper
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {
@@ -1011,7 +1023,6 @@ function getCookie(name) {
   return cookieValue;
 }
 
-// Escape HTML to prevent XSS
 function escapeHtml(text) {
   if (!text) return '';
   const div = document.createElement('div');
@@ -1019,7 +1030,6 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// Animation keyframes
 const style = document.createElement('style');
 style.textContent = `
   @keyframes tileIn {
@@ -1029,8 +1039,6 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Initialize
-fetchHotelName();
 loadRooms();
 </script>
 </body>

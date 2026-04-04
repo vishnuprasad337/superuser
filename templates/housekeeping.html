@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* [All CSS styles remain the same as in your code] */
         :root {
             --navy: #0f1f3d;
             --blue: #1a56db;
@@ -16,6 +15,8 @@
             --green: #10b981;
             --red: #ef4444;
             --purple: #7c3aed;
+            --yellow: #eab308;
+            --orange: #f97316;
             --surface: #ffffff;
             --surface-2: #f8fafc;
             --border: #e2e8f0;
@@ -57,7 +58,8 @@
         .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
         .stat-icon { width: 46px; height: 46px; border-radius: 11px; display: grid; place-items: center; font-size: 1.1rem; }
         .stat-icon.green { background: #ecfdf5; color: var(--green); }
-        .stat-icon.amber { background: #fffbeb; color: var(--accent); }
+        .stat-icon.amber { background: #fffbeb; color: var(--yellow); }
+        .stat-icon.orange { background: #fff7ed; color: var(--orange); }
         .stat-icon.purple { background: #f5f3ff; color: var(--purple); }
         .stat-icon.blue { background: #eff6ff; color: var(--blue); }
         .stat-number { font-size: 1.6rem; font-weight: 800; line-height: 1; }
@@ -68,18 +70,50 @@
         .card-title { font-size: 0.92rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
         .card-body { padding: 20px; }
 
-        .room-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
-        .room-card { border: 2px solid var(--border); border-radius: var(--radius); padding: 16px; transition: all 0.2s; cursor: pointer; background: var(--surface); }
+        .room-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+        .room-card { border: 2px solid var(--border); border-radius: var(--radius); padding: 16px; transition: all 0.2s; background: var(--surface); position: relative; }
         .room-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
-        .room-card.clean { border-left: 4px solid var(--green); }
-        .room-card.dirty { border-left: 4px solid var(--red); }
-        .room-card.maintenance { border-left: 4px solid var(--accent); background: #fffbeb; }
+        .room-card.available { border-left: 4px solid var(--green); background: linear-gradient(135deg, #fff, #f0fdf4); }
+        .room-card.dirty { border-left: 4px solid var(--yellow); background: linear-gradient(135deg, #fff, #fefce8); }
+        .room-card.cleaning { border-left: 4px solid var(--orange); background: linear-gradient(135deg, #fff, #fff7ed); }
+        .room-card.maintenance { border-left: 4px solid var(--red); background: linear-gradient(135deg, #fff, #fef2f2); }
         .room-number { font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; }
+        .room-type { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 8px; }
         .room-status { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; margin-top: 8px; }
-        .status-clean { background: #ecfdf5; color: #065f46; }
-        .status-dirty { background: #fef2f2; color: #b91c1c; }
-        .status-maintenance { background: #fffbeb; color: #b45309; }
-        .room-actions { margin-top: 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .status-available { background: #ecfdf5; color: #065f46; }
+        .status-dirty { background: #fef3c7; color: #92400e; }
+        .status-cleaning { background: #fff7ed; color: #c2410c; }
+        .status-maintenance { background: #fef2f2; color: #b91c1c; }
+        
+        .cleaning-checkbox-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .checkbox-label input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .checkbox-label.start { color: var(--orange); }
+        .checkbox-label.complete { color: var(--green); }
+        .checkbox-label.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .checkbox-label.disabled input {
+            cursor: not-allowed;
+        }
 
         .task-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--border); }
         .task-item:last-child { border-bottom: none; }
@@ -87,8 +121,8 @@
         .task-title { font-weight: 600; font-size: 0.85rem; }
         .task-desc { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
         .task-status { font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; display: inline-block; }
-        .task-status.pending { background: #fef2f2; color: #b91c1c; }
-        .task-status.completed { background: #ecfdf5; color: #065f46; }
+        .task-status.Pending { background: #fef2f2; color: #b91c1c; }
+        .task-status.Completed { background: #ecfdf5; color: #065f46; }
 
         .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
         .inventory-item { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; background: var(--surface); transition: all 0.2s; }
@@ -188,18 +222,27 @@
         <div class="topbar">
             <div class="topbar-left">
                 <h1><i class="fas fa-broom"></i> Housekeeping Dashboard</h1>
-                <p>Welcome back, {{ staff.name }}! Manage room status, cleaning tasks, and maintenance</p>
-            </div>
-            <div>
-                <button class="btn btn-outline btn-sm" onclick="switchPanel('maintenance')"><i class="fas fa-tools"></i> Report Issue</button>
+                <p>Welcome back, {{ staff.name }}! Manage room cleaning and maintenance</p>
             </div>
         </div>
 
         <div class="stats-row">
-            <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check-circle"></i></div><div><div class="stat-number" id="cleanCount">{{ clean_rooms|default:0 }}</div><div class="stat-label">Clean Rooms</div></div></div>
-            <div class="stat-card"><div class="stat-icon amber"><i class="fas fa-broom"></i></div><div><div class="stat-number" id="dirtyCount">{{ dirty_rooms|default:0 }}</div><div class="stat-label">Dirty Rooms</div></div></div>
-            <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-tools"></i></div><div><div class="stat-number" id="maintenanceCount">{{ maintenance_rooms|default:0 }}</div><div class="stat-label">Maintenance</div></div></div>
-            <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-tasks"></i></div><div><div class="stat-number" id="pendingTaskCount">{{ pending_tasks|default:0 }}</div><div class="stat-label">Pending Tasks</div></div></div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+                <div><div class="stat-number">{{ clean_rooms|default:0 }}</div><div class="stat-label">Clean Rooms</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon amber"><i class="fas fa-broom"></i></div>
+                <div><div class="stat-number">{{ dirty_rooms|default:0 }}</div><div class="stat-label">Dirty Rooms</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orange"><i class="fas fa-spray-can-sparkles"></i></div>
+                <div><div class="stat-number">{{ cleaning_rooms|default:0 }}</div><div class="stat-label">Cleaning</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="fas fa-tasks"></i></div>
+                <div><div class="stat-number">{{ pending_tasks|default:0 }}</div><div class="stat-label">Pending Tasks</div></div>
+            </div>
         </div>
 
         <div class="card">
@@ -207,20 +250,34 @@
                 <div class="card-title"><i class="fas fa-door-open"></i> Room Status</div>
                 <div class="tab-bar" id="roomFilterBar">
                     <button class="tab-btn active" onclick="filterRooms('all', this)">All</button>
-                    <button class="tab-btn" onclick="filterRooms('clean', this)">Clean</button>
+                    <button class="tab-btn" onclick="filterRooms('available', this)">Clean</button>
                     <button class="tab-btn" onclick="filterRooms('dirty', this)">Dirty</button>
+                    <button class="tab-btn" onclick="filterRooms('cleaning', this)">Cleaning</button>
                     <button class="tab-btn" onclick="filterRooms('maintenance', this)">Maintenance</button>
                 </div>
             </div>
             <div class="card-body">
                 <div id="roomsGrid" class="room-grid">
                     {% for room in rooms %}
-                    <div class="room-card {{ room.status }}" data-status="{{ room.status }}" data-room="{{ room.number }}" onclick="openRoomModal('{{ room.number }}', '{{ room.status }}', '{{ room.notes|escapejs }}')">
+                    <div class="room-card {{ room.status }}" data-status="{{ room.status }}" data-room-id="{{ room.id }}" data-room-number="{{ room.number }}">
                         <div class="room-number">Room {{ room.number }}</div>
-                        <div class="room-status status-{{ room.status }}">{{ room.status|title }}</div>
-                        {% if room.notes %}<div style="font-size:0.65rem; color:var(--text-muted); margin-top:6px;"><i class="fas fa-pen"></i> {{ room.notes|truncatechars:30 }}</div>{% endif %}
-                        <div class="room-actions">
-                            <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); openRoomModal('{{ room.number }}', '{{ room.status }}', '{{ room.notes|escapejs }}')"><i class="fas fa-edit"></i> Update</button>
+                        <div class="room-type">{{ room.room_type }}</div>
+                        <div class="room-status status-{{ room.status }}">
+                            {% if room.status == 'available' %}🟢 Clean & Available
+                            {% elif room.status == 'dirty' %}🟡 Dirty - Needs Cleaning
+                            {% elif room.status == 'cleaning' %}🟠 Cleaning in Progress
+                            {% elif room.status == 'maintenance' %}🔴 Maintenance Required
+                            {% endif %}
+                        </div>
+                        <div class="cleaning-checkbox-group">
+                            <label class="checkbox-label start {% if room.status != 'dirty' %}disabled{% endif %}">
+                                <input type="checkbox" class="start-cleaning" data-room-id="{{ room.id }}" data-room-number="{{ room.number }}" {% if room.status != 'dirty' %}disabled{% endif %}>
+                                <i class="fas fa-play"></i> Start Cleaning
+                            </label>
+                            <label class="checkbox-label complete {% if room.status != 'cleaning' %}disabled{% endif %}">
+                                <input type="checkbox" class="complete-cleaning" data-room-id="{{ room.id }}" data-room-number="{{ room.number }}" {% if room.status != 'cleaning' %}disabled{% endif %}>
+                                <i class="fas fa-check"></i> Complete & Make Available
+                            </label>
                         </div>
                     </div>
                     {% empty %}
@@ -241,17 +298,14 @@
                         <div class="task-info">
                             <div class="task-title">{{ task.title }}</div>
                             <div class="task-desc">{{ task.description|default:"No description" }}</div>
-                            {% if task.room %}<div class="task-desc"><i class="fas fa-door-open"></i> Room {{ task.room }}</div>{% endif %}
+                            {% if task.room_unit %}<div class="task-desc"><i class="fas fa-door-open"></i> Room {{ task.room_unit.room_number }}</div>{% endif %}
                         </div>
                         <div style="display: flex; gap: 8px; align-items: center;">
-                            <span class="task-status {{ task.status }}">{{ task.status|default:"pending"|title }}</span>
-                            {% if task.status != "completed" %}
-                            <button class="btn btn-sm btn-success" onclick="completeTask('{{ task.id }}', this)"><i class="fas fa-check"></i> Complete</button>
-                            {% endif %}
+                            <span class="task-status {{ task.status }}">{{ task.status|default:"Pending" }}</span>
                         </div>
                     </div>
                     {% empty %}
-                    <div class="empty"><i class="fas fa-check-circle"></i><p>No tasks assigned</p></div>
+                    <div class="empty"><i class="fas fa-check-circle"></i><p>No pending tasks assigned</p></div>
                     {% endfor %}
                 </div>
             </div>
@@ -263,7 +317,7 @@
         <div class="topbar">
             <div class="topbar-left">
                 <h1><i class="fas fa-tasks"></i> My Tasks</h1>
-                <p>Track and complete your assigned duties</p>
+                <p>Track your assigned duties</p>
             </div>
             <button class="btn btn-outline btn-sm" onclick="switchPanel('housekeeping')"><i class="fas fa-arrow-left"></i> Back</button>
         </div>
@@ -276,14 +330,11 @@
                         <div class="task-info">
                             <div class="task-title">{{ task.title }}</div>
                             <div class="task-desc">{{ task.description|default:"No description" }}</div>
-                            {% if task.room %}<div class="task-desc"><i class="fas fa-door-open"></i> Room {{ task.room }}</div>{% endif %}
-                            <div class="task-desc"><i class="fas fa-calendar"></i> Assigned: {{ task.created_at|date:"M d, Y"|default:"Recently" }}</div>
+                            {% if task.room_unit %}<div class="task-desc"><i class="fas fa-door-open"></i> Room {{ task.room_unit.room_number }}</div>{% endif %}
+                            <div class="task-desc"><i class="fas fa-calendar"></i> Assigned: {{ task.created_at|date:"M d, Y H:i"|default:"Recently" }}</div>
                         </div>
                         <div style="display: flex; gap: 8px; align-items: center;">
-                            <span class="task-status {{ task.status }}">{{ task.status|default:"pending"|title }}</span>
-                            {% if task.status != "completed" %}
-                            <button class="btn btn-sm btn-success" onclick="completeTask('{{ task.id }}', this)"><i class="fas fa-check"></i> Complete</button>
-                            {% endif %}
+                            <span class="task-status {{ task.status }}">{{ task.status|default:"Pending" }}</span>
                         </div>
                     </div>
                     {% empty %}
@@ -298,17 +349,24 @@
     <div class="panel" id="panel-inventory">
         <div class="topbar">
             <div class="topbar-left">
-                <h1><i class="fas fa-boxes"></i> Inventory Management</h1>
-                <p>Track cleaning supplies and housekeeping inventory</p>
+                <h1><i class="fas fa-boxes"></i> Housekeeping Inventory</h1>
+                <p>Track cleaning supplies and amenities</p>
             </div>
-            <button class="btn btn-primary btn-sm" onclick="openInventoryModal()"><i class="fas fa-plus"></i> Add Item</button>
         </div>
 
         <div class="stats-row">
-            <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-box"></i></div><div><div class="stat-number">{{ total_items|default:0 }}</div><div class="stat-label">Total Items</div></div></div>
-            <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check-circle"></i></div><div><div class="stat-number">{{ in_stock_items|default:0 }}</div><div class="stat-label">In Stock</div></div></div>
-            <div class="stat-card"><div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-number">{{ low_stock_items|default:0 }}</div><div class="stat-label">Low Stock</div></div></div>
-            <div class="stat-card"><div class="stat-icon amber"><i class="fas fa-chart-line"></i></div><div><div class="stat-number">{{ categories_count|default:0 }}</div><div class="stat-label">Categories</div></div></div>
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-box"></i></div>
+                <div><div class="stat-number">{{ total_items|default:0 }}</div><div class="stat-label">Total Items</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+                <div><div class="stat-number">{{ in_stock_items|default:0 }}</div><div class="stat-label">In Stock</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon amber"><i class="fas fa-exclamation-triangle"></i></div>
+                <div><div class="stat-number">{{ low_stock_items|default:0 }}</div><div class="stat-label">Low Stock</div></div>
+            </div>
         </div>
 
         <div class="card">
@@ -325,17 +383,16 @@
             <div class="card-body">
                 <div id="inventoryGrid" class="inventory-grid">
                     {% for item in inventory_items %}
-                    <div class="inventory-item" data-category="{{ item.category }}" data-id="{{ item.id }}">
+                    <div class="inventory-item" data-category="{{ item.category }}">
                         <div class="item-name">{{ item.name }}</div>
                         <div class="item-quantity"><strong>Quantity:</strong> {{ item.quantity }} {{ item.unit }}</div>
                         <div class="item-category"><i class="fas fa-tag"></i> {{ item.category|title }}</div>
                         {% if item.quantity <= item.reorder_level %}
-                        <div class="low-stock"><i class="fas fa-exclamation-triangle"></i> Low Stock! Reorder needed (Min: {{ item.reorder_level }})</div>
+                        <div class="low-stock"><i class="fas fa-exclamation-triangle"></i> Low Stock! Reorder needed</div>
                         {% endif %}
-                        
                     </div>
                     {% empty %}
-                    <div class="empty" style="grid-column:1/-1"><i class="fas fa-box-open"></i><p>No inventory items found</p><button class="btn btn-sm btn-primary" onclick="openInventoryModal()" style="margin-top: 10px;"><i class="fas fa-plus"></i> Add First Item</button></div>
+                    <div class="empty" style="grid-column:1/-1"><i class="fas fa-box-open"></i><p>No inventory items found</p></div>
                     {% endfor %}
                 </div>
             </div>
@@ -356,7 +413,12 @@
             <div class="card-body">
                 <div class="form-group">
                     <label class="form-label">Room Number *</label>
-                    <input type="text" id="issueRoom" class="form-control" placeholder="e.g., 101">
+                    <select id="issueRoom" class="form-control">
+                        <option value="">Select room number</option>
+                        {% for room in rooms %}
+                        <option value="{{ room.number }}">Room {{ room.number }} - {{ room.room_type }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Issue Type *</label>
@@ -379,11 +441,6 @@
     </div>
 </main>
 
-<!-- Modals -->
-<div class="modal-backdrop" id="roomStatusModal"><div class="modal"><div class="modal-header"><span><i class="fas fa-door-open"></i> Update Room Status</span><button class="modal-close" onclick="closeModal('roomStatusModal')">&times;</button></div><div class="modal-body"><input type="hidden" id="modalRoomNumber"><p><strong>Room <span id="modalRoomNumDisplay"></span></strong></p><div class="form-group"><label class="form-label">Status</label><select id="roomStatusSelect" class="form-control"><option value="clean">Clean</option><option value="dirty">Dirty</option><option value="maintenance">Maintenance Required</option></select></div><div class="form-group"><label class="form-label">Notes</label><textarea id="roomNotes" class="form-control" rows="2" placeholder="Optional notes..."></textarea></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('roomStatusModal')">Cancel</button><button class="btn btn-primary" onclick="updateRoomStatus()">Update Status</button></div></div></div>
-
-<div class="modal-backdrop" id="inventoryModal"><div class="modal"><div class="modal-header"><span><i class="fas fa-box"></i> Add/Update Inventory</span><button class="modal-close" onclick="closeModal('inventoryModal')">&times;</button></div><div class="modal-body"><input type="hidden" id="inventoryItemId"><div class="form-group"><label class="form-label">Item Name *</label><input type="text" id="inventoryName" class="form-control" placeholder="e.g., Shampoo, Towels, Detergent"></div><div class="form-group"><label class="form-label">Category *</label><select id="inventoryCategory" class="form-control"><option value="cleaning">Cleaning Supplies</option><option value="linen">Linen & Towels</option><option value="amenities">Guest Amenities</option><option value="equipment">Equipment</option></select></div><div class="form-group"><label class="form-label">Quantity *</label><input type="number" id="inventoryQuantity" class="form-control" placeholder="Quantity" min="0" value="0"></div><div class="form-group"><label class="form-label">Unit</label><input type="text" id="inventoryUnit" class="form-control" placeholder="e.g., pieces, bottles, packs" value="pieces"></div><div class="form-group"><label class="form-label">Reorder Level</label><input type="number" id="inventoryReorderLevel" class="form-control" placeholder="Alert when quantity below" value="10" min="0"></div></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('inventoryModal')">Cancel</button><button class="btn btn-primary" id="saveInventoryBtn" onclick="saveInventoryItem(event)">Save Item</button></div></div></div>
-
 <div class="toast-stack" id="toastStack"></div>
 
 <script>
@@ -394,16 +451,6 @@ function toast(msg, type = 'success') {
     el.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${msg}`;
     stack.appendChild(el);
     setTimeout(() => el.remove(), 3500);
-}
-
-function closeModal(id) { 
-    const modal = document.getElementById(id);
-    if (modal) modal.classList.remove('open'); 
-}
-
-function openModal(id) { 
-    const modal = document.getElementById(id);
-    if (modal) modal.classList.add('open'); 
 }
 
 function getCsrfToken() {
@@ -441,200 +488,76 @@ function filterInventory(category, btn) {
     if (btn) btn.classList.add('active');
 }
 
-function openRoomModal(roomNumber, currentStatus, notes) {
-    document.getElementById('modalRoomNumber').value = roomNumber;
-    document.getElementById('modalRoomNumDisplay').textContent = roomNumber;
-    document.getElementById('roomStatusSelect').value = currentStatus;
-    document.getElementById('roomNotes').value = notes || '';
-    openModal('roomStatusModal');
+function switchPanel(panelName) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    const targetPanel = document.getElementById(`panel-${panelName}`);
+    if (targetPanel) targetPanel.classList.add('active');
+    
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.querySelector(`.nav-btn[data-panel="${panelName}"]`);
+    if (activeBtn) activeBtn.classList.add('active');
 }
 
-function openInventoryModal() {
-    document.getElementById('inventoryItemId').value = '';
-    document.getElementById('inventoryName').value = '';
-    document.getElementById('inventoryCategory').value = 'cleaning';
-    document.getElementById('inventoryQuantity').value = '';
-    document.getElementById('inventoryUnit').value = 'pieces';
-    document.getElementById('inventoryReorderLevel').value = '10';
-    openModal('inventoryModal');
-}
-
-function editInventoryItem(id, name, category, quantity, unit, reorderLevel) {
-    document.getElementById('inventoryItemId').value = id;
-    document.getElementById('inventoryName').value = name;
-    document.getElementById('inventoryCategory').value = category;
-    document.getElementById('inventoryQuantity').value = quantity;
-    document.getElementById('inventoryUnit').value = unit;
-    document.getElementById('inventoryReorderLevel').value = reorderLevel;
-    openModal('inventoryModal');
-}
-
-async function saveInventoryItem(event) {
-    // Prevent default form submission
-    if (event) event.preventDefault();
-    
-    const id = document.getElementById('inventoryItemId').value;
-    const name = document.getElementById('inventoryName').value.trim();
-    const category = document.getElementById('inventoryCategory').value;
-    const quantity = parseInt(document.getElementById('inventoryQuantity').value);
-    const unit = document.getElementById('inventoryUnit').value.trim();
-    const reorderLevel = parseInt(document.getElementById('inventoryReorderLevel').value);
-    
-    if (!name) { toast('Please enter item name', 'error'); return; }
-    if (isNaN(quantity)) { toast('Please enter valid quantity', 'error'); return; }
-    if (quantity < 0) { toast('Quantity cannot be negative', 'error'); return; }
-    
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('category', category);
-    formData.append('quantity', quantity);
-    formData.append('unit', unit);
-    formData.append('reorder_level', reorderLevel);
-    
-    const url = id ? `/update-inventory/${id}/` : '/add-inventory/';
-    
-    const saveBtn = document.getElementById('saveInventoryBtn');
-    const originalText = saveBtn.innerHTML;
-    saveBtn.disabled = true;
-    saveBtn.innerHTML = '<span class="spinner"></span> Saving...';
+async function startCleaning(roomId, roomNumber, checkbox) {
+    if (checkbox && !checkbox.checked) return;
     
     try {
-        const response = await fetch(url, {
+        const response = await fetch('/api/start-cleaning/', {
             method: 'POST',
-            body: formData,
-            headers: { 'X-CSRFToken': getCsrfToken() }
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({ room_unit_id: roomId })
         });
         const data = await response.json();
         if (response.ok) {
-            toast(id ? 'Inventory updated successfully!' : 'Inventory item added successfully!');
-            closeModal('inventoryModal');
+            toast(`Started cleaning Room ${roomNumber}`, 'success');
             setTimeout(() => window.location.reload(), 500);
         } else {
-            toast(data.error || 'Failed to save inventory item', 'error');
+            toast(data.error || 'Failed to start cleaning', 'error');
+            if (checkbox) checkbox.checked = false;
         }
     } catch (error) {
-        console.error('Save inventory error:', error);
         toast('Network error: ' + error.message, 'error');
-    } finally {
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = originalText;
+        if (checkbox) checkbox.checked = false;
     }
 }
 
-async function useInventoryItem(itemId, itemName) {
-    const quantity = prompt(`How many ${itemName} to use?`, '1');
-    if (quantity === null) return;
-    
-    const useQty = parseInt(quantity);
-    if (isNaN(useQty) || useQty <= 0) {
-        toast('Please enter a valid quantity', 'error');
-        return;
-    }
-    
-    const formData = new FormData();
-    formData.append('item_id', itemId);
-    formData.append('quantity', useQty);
+async function completeCleaning(roomId, roomNumber, checkbox) {
+    if (checkbox && !checkbox.checked) return;
     
     try {
-        const response = await fetch('/use-inventory/', {
+        const response = await fetch('/api/complete-cleaning/', {
             method: 'POST',
-            body: formData,
-            headers: { 'X-CSRFToken': getCsrfToken() }
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({ room_unit_id: roomId })
         });
         const data = await response.json();
         if (response.ok) {
-            toast(`Used ${useQty} ${itemName}(s)`);
+            toast(`Room ${roomNumber} is now clean and available!`, 'success');
             setTimeout(() => window.location.reload(), 500);
         } else {
-            toast(data.error || 'Failed to use inventory', 'error');
+            toast(data.error || 'Failed to complete cleaning', 'error');
+            if (checkbox) checkbox.checked = false;
         }
     } catch (error) {
-        console.error('Use inventory error:', error);
         toast('Network error: ' + error.message, 'error');
-    }
-}
-
-async function updateRoomStatus() {
-    const roomNumber = document.getElementById('modalRoomNumber').value;
-    const status = document.getElementById('roomStatusSelect').value;
-    const notes = document.getElementById('roomNotes').value;
-    
-    const formData = new FormData();
-    formData.append('room_number', roomNumber);
-    formData.append('status', status);
-    formData.append('notes', notes);
-    
-    try {
-        const response = await fetch('/update-room-status/', {
-            method: 'POST',
-            body: formData,
-            headers: { 'X-CSRFToken': getCsrfToken() }
-        });
-        const data = await response.json();
-        if (response.ok) {
-            toast(`Room ${roomNumber} updated to ${status}`);
-            closeModal('roomStatusModal');
-            setTimeout(() => window.location.reload(), 500);
-        } else {
-            toast(data.error || 'Failed to update', 'error');
-        }
-    } catch (error) {
-        console.error('Update room status error:', error);
-        toast('Network error: ' + error.message, 'error');
-    }
-}
-
-async function completeTask(taskId, btn) {
-    btn.disabled = true;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<span class="spinner"></span>';
-    
-    const formData = new FormData();
-    formData.append('task_id', taskId);
-    
-    try {
-        const response = await fetch('/complete-housekeeping-task/', {
-            method: 'POST',
-            body: formData,
-            headers: { 'X-CSRFToken': getCsrfToken() }
-        });
-        const data = await response.json();
-        if (response.ok) {
-            toast('Task completed!');
-            const taskDiv = btn.closest('.task-item');
-            const statusSpan = taskDiv.querySelector('.task-status');
-            statusSpan.textContent = 'Completed';
-            statusSpan.className = 'task-status completed';
-            btn.remove();
-            
-            const pendingCountElem = document.getElementById('pendingTaskCount');
-            if (pendingCountElem) {
-                const currentCount = parseInt(pendingCountElem.textContent);
-                if (!isNaN(currentCount)) {
-                    pendingCountElem.textContent = currentCount - 1;
-                }
-            }
-        } else {
-            toast(data.error || 'Failed to complete', 'error');
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-        }
-    } catch (error) {
-        console.error('Complete task error:', error);
-        toast('Network error: ' + error.message, 'error');
-        btn.disabled = false;
-        btn.innerHTML = originalText;
+        if (checkbox) checkbox.checked = false;
     }
 }
 
 async function submitMaintenance(event) {
     if (event) event.preventDefault();
     
-    const room = document.getElementById('issueRoom').value.trim();
+    const room = document.getElementById('issueRoom').value;
     const issueType = document.getElementById('issueType').value;
     const description = document.getElementById('issueDesc').value.trim();
     
-    if (!room) { toast('Please enter room number', 'error'); return; }
+    if (!room) { toast('Please select a room number', 'error'); return; }
     if (!description) { toast('Please describe the issue', 'error'); return; }
     
     const formData = new FormData();
@@ -642,7 +565,7 @@ async function submitMaintenance(event) {
     formData.append('issue_type', issueType);
     formData.append('description', description);
     
-    const submitBtn = event ? event.target : document.querySelector('#panel-maintenance .btn-primary');
+    const submitBtn = event.target;
     const originalText = submitBtn.innerHTML;
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="spinner"></span> Submitting...';
@@ -663,7 +586,6 @@ async function submitMaintenance(event) {
             toast(data.error || 'Failed to submit', 'error');
         }
     } catch (error) {
-        console.error('Submit maintenance error:', error);
         toast('Network error: ' + error.message, 'error');
     } finally {
         submitBtn.disabled = false;
@@ -671,17 +593,31 @@ async function submitMaintenance(event) {
     }
 }
 
-function switchPanel(panelName) {
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    const targetPanel = document.getElementById(`panel-${panelName}`);
-    if (targetPanel) targetPanel.classList.add('active');
+document.addEventListener('DOMContentLoaded', function() {
+    const startCheckboxes = document.querySelectorAll('.start-cleaning');
+    const completeCheckboxes = document.querySelectorAll('.complete-cleaning');
     
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    const activeBtn = document.querySelector(`.nav-btn[data-panel="${panelName}"]`);
-    if (activeBtn) activeBtn.classList.add('active');
-}
+    startCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                const roomId = this.dataset.roomId;
+                const roomNumber = this.dataset.roomNumber;
+                startCleaning(roomId, roomNumber, this);
+            }
+        });
+    });
+    
+    completeCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                const roomId = this.dataset.roomId;
+                const roomNumber = this.dataset.roomNumber;
+                completeCleaning(roomId, roomNumber, this);
+            }
+        });
+    });
+});
 
-// Event Listeners
 document.querySelectorAll('.nav-btn[data-panel]').forEach(btn => {
     btn.addEventListener('click', () => switchPanel(btn.dataset.panel));
 });
@@ -695,9 +631,6 @@ document.querySelectorAll('.modal-backdrop').forEach(bd => {
         if (e.target === bd) bd.classList.remove('open'); 
     });
 });
-
-// Initialization
-console.log('Housekeeping dashboard loaded successfully');
 </script>
 </body>
 </html>

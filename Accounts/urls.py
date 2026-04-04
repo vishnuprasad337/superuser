@@ -33,6 +33,22 @@ urlpatterns =[
     path("hr/", hr_dashboard, name="hr_dashboard"),
     path("frontoffice/", frontoffice_dashboard, name="frontoffice_dashboard"),
     path("accountant/", accountant_dashboard, name="accountant_dashboard"),
+    # FROND END DASHBOARDS
+      path("api/create-booking/", create_booking, name="create_booking"),
+
+    # 🔹 Check-In / Check-Out
+    path("api/check-in/", check_in, name="check_in"),
+    path("api/check-out/", check_out, name="check_out"),
+
+    # 🔹 Housekeeping
+    path("api/assign-housekeeping-task/", assign_housekeeping_task, name="assign_housekeeping_task"),
+    path("api/get-bill/", get_bill, name="get_bill"),
+    path('api/start-cleaning/', start_cleaning, name='start_cleaning'),
+    path('api/complete-cleaning/', complete_cleaning, name='complete_cleaning'),
+    path('api/add-inventory/', add_inventory, name='add_inventory'),
+    path('api/update-inventory/<int:item_id>/', update_inventory, name='update_inventory'),
+    path('api/delete-inventory/<int:item_id>/', delete_inventory, name='delete_inventory'),
+
     
 ]
  
