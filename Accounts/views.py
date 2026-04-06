@@ -845,6 +845,29 @@ def add_inventory(request):
             return JsonResponse({"error": str(e)}, status=500)
     
     return JsonResponse({"error": "Method not allowed"}, status=405)
+def get_inventory(request):
+    try:
+        staff = Staff.objects.get(id=request.session.get("staff_id"))
+        hotel = staff.hotel
+
+        items = InventoryItem.objects.filter(hotel=hotel).select_related("room")
+
+        data = []
+        for item in items:
+            data.append({
+                "id": item.id,
+                "name": item.name,
+                "category": item.category,
+                "quantity": item.quantity,
+                "unit": item.unit,
+                "room_number": item.room.room_number, 
+                "description": item.description
+            })
+
+        return JsonResponse({"items": data})
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 @csrf_exempt

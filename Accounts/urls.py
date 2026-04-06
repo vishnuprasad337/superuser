@@ -46,6 +46,8 @@ urlpatterns =[
     path('api/start-cleaning/', start_cleaning, name='start_cleaning'),
     path('api/complete-cleaning/', complete_cleaning, name='complete_cleaning'),
     path('api/add-inventory/', add_inventory, name='add_inventory'),
+    path("api/get-inventory/", get_inventory, name="get_inventory"),
+
     path('api/update-inventory/<int:item_id>/', update_inventory, name='update_inventory'),
     path('api/delete-inventory/<int:item_id>/', delete_inventory, name='delete_inventory'),
 

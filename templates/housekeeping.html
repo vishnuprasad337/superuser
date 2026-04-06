@@ -124,13 +124,17 @@
         .task-status.Pending { background: #fef2f2; color: #b91c1c; }
         .task-status.Completed { background: #ecfdf5; color: #065f46; }
 
-        .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
-        .inventory-item { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; background: var(--surface); transition: all 0.2s; }
+        .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+        .inventory-item { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; background: var(--surface); transition: all 0.2s; position: relative; }
         .inventory-item:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
         .item-name { font-weight: 700; font-size: 1rem; margin-bottom: 8px; color: var(--text); }
         .item-quantity { font-size: 0.85rem; color: var(--text); margin-bottom: 4px; }
         .item-category { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 8px; }
         .low-stock { color: var(--red); font-weight: 600; font-size: 0.7rem; margin-top: 6px; padding: 4px 8px; background: #fef2f2; border-radius: 6px; display: inline-block; }
+        .inventory-actions { position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; }
+        .btn-icon { background: rgba(255,255,255,0.9); border: 1px solid var(--border); border-radius: 6px; width: 28px; height: 28px; cursor: pointer; font-size: 0.75rem; color: var(--text-muted); transition: all 0.15s; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-icon:hover { background: var(--surface-2); color: var(--blue); }
+        .btn-icon.delete-inv:hover { color: var(--red); border-color: var(--red); }
 
         .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.18s; font-family: inherit; }
         .btn-primary { background: var(--blue); color: white; }
@@ -187,6 +191,8 @@
             display: inline-block;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .loading-placeholder { text-align: center; padding: 40px; color: var(--text-muted); }
     </style>
 </head>
 <body>
@@ -345,27 +351,28 @@
         </div>
     </div>
 
-    <!-- Inventory Panel -->
+    <!-- Inventory Panel - Units as Dropdown (Modified) -->
     <div class="panel" id="panel-inventory">
         <div class="topbar">
             <div class="topbar-left">
                 <h1><i class="fas fa-boxes"></i> Housekeeping Inventory</h1>
                 <p>Track cleaning supplies and amenities</p>
             </div>
+            <button class="btn btn-primary" onclick="openAddInventoryModal()"><i class="fas fa-plus"></i> Add Item</button>
         </div>
 
-        <div class="stats-row">
+        <div class="stats-row" id="inventoryStats">
             <div class="stat-card">
                 <div class="stat-icon blue"><i class="fas fa-box"></i></div>
-                <div><div class="stat-number">{{ total_items|default:0 }}</div><div class="stat-label">Total Items</div></div>
+                <div><div class="stat-number" id="totalItemsCount">0</div><div class="stat-label">Total Items</div></div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
-                <div><div class="stat-number">{{ in_stock_items|default:0 }}</div><div class="stat-label">In Stock</div></div>
+                <div><div class="stat-number" id="inStockCount">0</div><div class="stat-label">In Stock</div></div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon amber"><i class="fas fa-exclamation-triangle"></i></div>
-                <div><div class="stat-number">{{ low_stock_items|default:0 }}</div><div class="stat-label">Low Stock</div></div>
+                <div><div class="stat-number" id="lowStockCount">0</div><div class="stat-label">Low Stock</div></div>
             </div>
         </div>
 
@@ -382,18 +389,7 @@
             </div>
             <div class="card-body">
                 <div id="inventoryGrid" class="inventory-grid">
-                    {% for item in inventory_items %}
-                    <div class="inventory-item" data-category="{{ item.category }}">
-                        <div class="item-name">{{ item.name }}</div>
-                        <div class="item-quantity"><strong>Quantity:</strong> {{ item.quantity }} {{ item.unit }}</div>
-                        <div class="item-category"><i class="fas fa-tag"></i> {{ item.category|title }}</div>
-                        {% if item.quantity <= item.reorder_level %}
-                        <div class="low-stock"><i class="fas fa-exclamation-triangle"></i> Low Stock! Reorder needed</div>
-                        {% endif %}
-                    </div>
-                    {% empty %}
-                    <div class="empty" style="grid-column:1/-1"><i class="fas fa-box-open"></i><p>No inventory items found</p></div>
-                    {% endfor %}
+                    <div class="loading-placeholder"><i class="fas fa-spinner fa-pulse"></i> Loading inventory...</div>
                 </div>
             </div>
         </div>
@@ -441,9 +437,78 @@
     </div>
 </main>
 
+<!-- Add/Edit Inventory Modal with UNIT as DROPDOWN (modified) -->
+<div id="inventoryModal" class="modal-backdrop">
+    <div class="modal">
+        <div class="modal-header">
+            <span id="modalTitle">Add Inventory Item</span>
+            <button class="modal-close" onclick="closeInventoryModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <form id="inventoryForm" onsubmit="return false;">
+                <input type="hidden" id="inventoryItemId" value="">
+                <div class="form-group">
+                    <label class="form-label">Item Name *</label>
+                    <input type="text" id="invName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Category *</label>
+                    <select id="invCategory" class="form-control" required>
+                        <option value="cleaning">Cleaning</option>
+                        <option value="linen">Linen</option>
+                        <option value="amenities">Amenities</option>
+                        <option value="equipment">Equipment</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Quantity *</label>
+                    <input type="number" id="invQuantity" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Unit * (Dropdown)</label>
+                    <select id="invUnit" class="form-control" required>
+                        <option value="pieces">Pieces</option>
+                        <option value="bottles">Bottles</option>
+                        <option value="rolls">Rolls</option>
+                        <option value="sets">Sets</option>
+                        <option value="liters">Liters</option>
+                        <option value="kg">Kilograms</option>
+                        <option value="units">Units</option>
+                        <option value="packs">Packs</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Reorder Level</label>
+                    <input type="number" id="invReorderLevel" class="form-control" value="10">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Room (Assign to Room) *</label>
+                    <select id="invRoomId" class="form-control" required>
+                        <option value="">Select Room</option>
+                        {% for room in rooms %}
+                        <option value="{{ room.id }}">Room {{ room.number }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea id="invDescription" class="form-control" rows="2"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeInventoryModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveInventoryItem()">Save</button>
+        </div>
+    </div>
+</div>
+
 <div class="toast-stack" id="toastStack"></div>
 
 <script>
+// Global variable to store inventory items
+let inventoryData = [];
+
 function toast(msg, type = 'success') {
     const stack = document.getElementById('toastStack');
     const el = document.createElement('div');
@@ -482,7 +547,7 @@ function filterInventory(category, btn) {
     const items = document.querySelectorAll('.inventory-item');
     items.forEach(item => {
         const itemCategory = item.dataset.category;
-        item.style.display = (category === 'all' || itemCategory === category) ? 'block' : 'none';
+        item.style.display = (category === 'all' || itemCategory === category) ? 'flex' : 'none';
     });
     document.querySelectorAll('#inventoryFilterBar .tab-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
@@ -492,130 +557,266 @@ function switchPanel(panelName) {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     const targetPanel = document.getElementById(`panel-${panelName}`);
     if (targetPanel) targetPanel.classList.add('active');
-    
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
     const activeBtn = document.querySelector(`.nav-btn[data-panel="${panelName}"]`);
     if (activeBtn) activeBtn.classList.add('active');
+    
+    // Refresh inventory when panel is opened
+    if (panelName === 'inventory') {
+        fetchInventory();
+    }
 }
 
 async function startCleaning(roomId, roomNumber, checkbox) {
     if (checkbox && !checkbox.checked) return;
-    
     try {
         const response = await fetch('/api/start-cleaning/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCsrfToken()
-            },
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
             body: JSON.stringify({ room_unit_id: roomId })
         });
         const data = await response.json();
-        if (response.ok) {
-            toast(`Started cleaning Room ${roomNumber}`, 'success');
-            setTimeout(() => window.location.reload(), 500);
-        } else {
-            toast(data.error || 'Failed to start cleaning', 'error');
-            if (checkbox) checkbox.checked = false;
-        }
-    } catch (error) {
-        toast('Network error: ' + error.message, 'error');
-        if (checkbox) checkbox.checked = false;
-    }
+        if (response.ok) { toast(`Started cleaning Room ${roomNumber}`, 'success'); setTimeout(() => window.location.reload(), 500); }
+        else { toast(data.error || 'Failed', 'error'); if (checkbox) checkbox.checked = false; }
+    } catch (error) { toast('Network error', 'error'); if (checkbox) checkbox.checked = false; }
 }
 
 async function completeCleaning(roomId, roomNumber, checkbox) {
     if (checkbox && !checkbox.checked) return;
-    
     try {
         const response = await fetch('/api/complete-cleaning/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCsrfToken()
-            },
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
             body: JSON.stringify({ room_unit_id: roomId })
         });
         const data = await response.json();
-        if (response.ok) {
-            toast(`Room ${roomNumber} is now clean and available!`, 'success');
-            setTimeout(() => window.location.reload(), 500);
-        } else {
-            toast(data.error || 'Failed to complete cleaning', 'error');
-            if (checkbox) checkbox.checked = false;
-        }
-    } catch (error) {
-        toast('Network error: ' + error.message, 'error');
-        if (checkbox) checkbox.checked = false;
-    }
+        if (response.ok) { toast(`Room ${roomNumber} is now clean!`, 'success'); setTimeout(() => window.location.reload(), 500); }
+        else { toast(data.error || 'Failed', 'error'); if (checkbox) checkbox.checked = false; }
+    } catch (error) { toast('Network error', 'error'); if (checkbox) checkbox.checked = false; }
 }
 
 async function submitMaintenance(event) {
     if (event) event.preventDefault();
-    
     const room = document.getElementById('issueRoom').value;
     const issueType = document.getElementById('issueType').value;
     const description = document.getElementById('issueDesc').value.trim();
-    
-    if (!room) { toast('Please select a room number', 'error'); return; }
-    if (!description) { toast('Please describe the issue', 'error'); return; }
-    
+    if (!room) { toast('Select a room', 'error'); return; }
+    if (!description) { toast('Describe issue', 'error'); return; }
     const formData = new FormData();
     formData.append('room_number', room);
     formData.append('issue_type', issueType);
     formData.append('description', description);
-    
     const submitBtn = event.target;
     const originalText = submitBtn.innerHTML;
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="spinner"></span> Submitting...';
-    
     try {
-        const response = await fetch('/report-maintenance/', {
-            method: 'POST',
-            body: formData,
+        const response = await fetch('/report-maintenance/', { method: 'POST', body: formData, headers: { 'X-CSRFToken': getCsrfToken() } });
+        const data = await response.json();
+        if (response.ok) { toast('Maintenance request submitted!'); document.getElementById('issueRoom').value = ''; document.getElementById('issueDesc').value = ''; switchPanel('housekeeping'); }
+        else { toast(data.error || 'Failed', 'error'); }
+    } catch (error) { toast('Network error', 'error'); }
+    finally { submitBtn.disabled = false; submitBtn.innerHTML = originalText; }
+}
+
+// ========== INVENTORY FUNCTIONS WITH get_inventory API ==========
+async function fetchInventory() {
+    try {
+        const response = await fetch('/api/get-inventory/', {
+            method: 'GET',
             headers: { 'X-CSRFToken': getCsrfToken() }
         });
         const data = await response.json();
-        if (response.ok) {
-            toast('Maintenance request submitted successfully!');
-            document.getElementById('issueRoom').value = '';
-            document.getElementById('issueDesc').value = '';
-            switchPanel('housekeeping');
+        
+        if (response.ok && data.items) {
+            inventoryData = data.items;
+            renderInventoryGrid(inventoryData);
+            updateInventoryStats(inventoryData);
         } else {
-            toast(data.error || 'Failed to submit', 'error');
+            toast('Failed to load inventory', 'error');
+            document.getElementById('inventoryGrid').innerHTML = '<div class="empty"><i class="fas fa-box-open"></i><p>No inventory items found. Click "Add Item" to create.</p></div>';
         }
     } catch (error) {
-        toast('Network error: ' + error.message, 'error');
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalText;
+        console.error('Error fetching inventory:', error);
+        toast('Network error loading inventory', 'error');
+        document.getElementById('inventoryGrid').innerHTML = '<div class="empty"><i class="fas fa-exclamation-triangle"></i><p>Error loading inventory. Please refresh.</p></div>';
     }
 }
 
+function updateInventoryStats(items) {
+    const total = items.length;
+    let inStock = 0;
+    let lowStock = 0;
+    
+    items.forEach(item => {
+        if (item.quantity > 0) inStock++;
+        if (item.quantity <= (item.reorder_level || 10)) lowStock++;
+    });
+    
+    document.getElementById('totalItemsCount').innerText = total;
+    document.getElementById('inStockCount').innerText = inStock;
+    document.getElementById('lowStockCount').innerText = lowStock;
+}
+
+function renderInventoryGrid(items) {
+    const grid = document.getElementById('inventoryGrid');
+    
+    if (!items || items.length === 0) {
+        grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><i class="fas fa-box-open"></i><p>No inventory items found. Click "Add Item" to create.</p></div>';
+        return;
+    }
+    
+    grid.innerHTML = items.map(item => `
+        <div class="inventory-item" data-category="${item.category}" data-item-id="${item.id}" data-name="${item.name}" data-quantity="${item.quantity}" data-unit="${item.unit}" data-reorder="${item.reorder_level || 10}" data-room="${item.room_number || ''}" data-desc="${item.description || ''}">
+            <div class="item-name">${escapeHtml(item.name)}</div>
+            <div class="item-quantity"><strong>Quantity:</strong> ${item.quantity} ${item.unit}</div>
+            <div class="item-category"><i class="fas fa-tag"></i> ${item.category.charAt(0).toUpperCase() + item.category.slice(1)}</div>
+            ${item.room_number ? `<div class="item-category"><i class="fas fa-door-open"></i> Room ${item.room_number}</div>` : ''}
+            ${item.quantity <= (item.reorder_level || 10) ? `<div class="low-stock"><i class="fas fa-exclamation-triangle"></i> Low Stock! Reorder needed</div>` : ''}
+            <div class="inventory-actions">
+                <button class="btn-icon" onclick="editInventoryItem(${item.id})" title="Edit"><i class="fas fa-edit"></i></button>
+                <button class="btn-icon delete-inv" onclick="deleteInventoryItem(${item.id})" title="Delete"><i class="fas fa-trash-alt"></i></button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+function openAddInventoryModal() {
+    document.getElementById('modalTitle').innerText = 'Add Inventory Item';
+    document.getElementById('inventoryItemId').value = '';
+    document.getElementById('invName').value = '';
+    document.getElementById('invCategory').value = 'cleaning';
+    document.getElementById('invQuantity').value = '';
+    document.getElementById('invUnit').value = 'pieces';
+    document.getElementById('invReorderLevel').value = '10';
+    document.getElementById('invRoomId').value = '';
+    document.getElementById('invDescription').value = '';
+    document.getElementById('inventoryModal').classList.add('open');
+}
+
+function closeInventoryModal() {
+    document.getElementById('inventoryModal').classList.remove('open');
+}
+
+async function saveInventoryItem() {
+    const itemId = document.getElementById('inventoryItemId').value;
+    const name = document.getElementById('invName').value.trim();
+    const category = document.getElementById('invCategory').value;
+    const quantity = document.getElementById('invQuantity').value;
+    const unit = document.getElementById('invUnit').value;
+    const reorder_level = document.getElementById('invReorderLevel').value;
+    const room_id = document.getElementById('invRoomId').value;
+    const description = document.getElementById('invDescription').value;
+    
+    if (!name) { toast('Item name is required', 'error'); return; }
+    if (!quantity) { toast('Quantity is required', 'error'); return; }
+    if (!room_id) { toast('Please select a room', 'error'); return; }
+    
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('category', category);
+    formData.append('quantity', quantity);
+    formData.append('unit', unit);
+    formData.append('reorder_level', reorder_level);
+    formData.append('room_id', room_id);
+    formData.append('description', description);
+    
+    let url = '/api/add-inventory/';
+    let method = 'POST';
+    if (itemId) {
+        url = `/api/update-inventory/${itemId}/`;
+        method = 'POST';
+    }
+    
+    try {
+        const response = await fetch(url, { method: method, body: formData, headers: { 'X-CSRFToken': getCsrfToken() } });
+        const data = await response.json();
+        if (response.ok) { 
+            toast(itemId ? 'Item updated successfully' : 'Item added successfully', 'success'); 
+            closeInventoryModal(); 
+            fetchInventory();
+        } else { 
+            toast(data.error || 'Operation failed', 'error'); 
+        }
+    } catch (err) { 
+        toast('Network error: ' + err.message, 'error'); 
+    }
+}
+
+function editInventoryItem(itemId) {
+    const item = inventoryData.find(i => i.id === itemId);
+    if (!item) {
+        toast('Item not found', 'error');
+        return;
+    }
+    
+    document.getElementById('modalTitle').innerText = 'Edit Inventory Item';
+    document.getElementById('inventoryItemId').value = item.id;
+    document.getElementById('invName').value = item.name;
+    document.getElementById('invCategory').value = item.category;
+    document.getElementById('invQuantity').value = item.quantity;
+    document.getElementById('invUnit').value = item.unit || 'pieces';
+    document.getElementById('invReorderLevel').value = item.reorder_level || 10;
+    document.getElementById('invDescription').value = item.description || '';
+    
+    // Find room select option by room number
+    const roomSelect = document.getElementById('invRoomId');
+    for (let i = 0; i < roomSelect.options.length; i++) {
+        if (roomSelect.options[i].text.includes(item.room_number || '')) {
+            roomSelect.value = roomSelect.options[i].value;
+            break;
+        }
+    }
+    
+    document.getElementById('inventoryModal').classList.add('open');
+}
+
+async function deleteInventoryItem(itemId) {
+    if (!confirm('Are you sure you want to delete this inventory item permanently?')) return;
+    
+    try {
+        const response = await fetch(`/api/delete-inventory/${itemId}/`, { 
+            method: 'DELETE', 
+            headers: { 
+                'X-CSRFToken': getCsrfToken(),
+                'Content-Type': 'application/json'
+            } 
+        });
+        if (response.ok) { 
+            toast('Item deleted successfully', 'success'); 
+            fetchInventory();
+        } else {
+            const data = await response.json().catch(() => ({}));
+            toast(data.error || 'Delete failed', 'error'); 
+        }
+    } catch (err) { 
+        toast('Network error: ' + err.message, 'error'); 
+    }
+}
+
+// Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
-    const startCheckboxes = document.querySelectorAll('.start-cleaning');
-    const completeCheckboxes = document.querySelectorAll('.complete-cleaning');
-    
-    startCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            if (this.checked) {
-                const roomId = this.dataset.roomId;
-                const roomNumber = this.dataset.roomNumber;
-                startCleaning(roomId, roomNumber, this);
-            }
+    document.querySelectorAll('.start-cleaning').forEach(cb => {
+        cb.addEventListener('change', function() { 
+            if(this.checked) startCleaning(this.dataset.roomId, this.dataset.roomNumber, this); 
+        });
+    });
+    document.querySelectorAll('.complete-cleaning').forEach(cb => {
+        cb.addEventListener('change', function() { 
+            if(this.checked) completeCleaning(this.dataset.roomId, this.dataset.roomNumber, this); 
         });
     });
     
-    completeCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            if (this.checked) {
-                const roomId = this.dataset.roomId;
-                const roomNumber = this.dataset.roomNumber;
-                completeCleaning(roomId, roomNumber, this);
-            }
-        });
-    });
+    // Initial inventory load
+    fetchInventory();
 });
 
 document.querySelectorAll('.nav-btn[data-panel]').forEach(btn => {
@@ -626,10 +827,8 @@ document.getElementById('menuBtn').addEventListener('click', () => {
     document.getElementById('sidebar').classList.toggle('open');
 });
 
-document.querySelectorAll('.modal-backdrop').forEach(bd => {
-    bd.addEventListener('click', e => { 
-        if (e.target === bd) bd.classList.remove('open'); 
-    });
+document.getElementById('inventoryModal').addEventListener('click', function(e) {
+    if (e.target === this) closeInventoryModal();
 });
 </script>
 </body>
