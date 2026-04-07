@@ -14,13 +14,25 @@ class Hotel(models.Model):
     password = models.CharField(max_length=100) 
     properties=models.ManyToManyField('Amenity', blank=True)
     is_approved = models.BooleanField(default=False)
+    
+    is_subscribed = models.BooleanField(default=False)
  
     
     def __str__(self):
         return self.hotel_name
 class Amenity(models.Model):
-    
+    AMENITY_TYPE = (
+        ("default", "Default"),
+        ("premium", "Premium"),
+    )
+
     name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    amenity_type = models.CharField(
+        max_length=10,
+        choices=AMENITY_TYPE,
+        default="default"  
+    )
 
     def __str__(self):
         return self.name

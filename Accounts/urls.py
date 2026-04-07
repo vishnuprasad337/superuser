@@ -1,6 +1,15 @@
 from django.urls import path
 from .views import *
 urlpatterns =[
+    # ADMIN
+    path("superadmin/", admin_login, name="admin_login"),
+    path("superadmin/dashboard/", superuser_dashboard, name="superuser_dashboard"),
+    path("approve-hotel/<int:id>/", approve_hotel, name="approve_hotel"),
+    path("reject-hotel/<int:id>/", reject_hotel, name="reject_hotel"),
+    path('save-hotel-modules/<int:hotel_id>/',save_hotel_modules, name='save_hotel_modules'),
+
+    
+
     path("", index, name="index"),
      path("register/", hotel_register, name="hotel_register"),
     path("login/", hotel_login, name="hotel_login"),
@@ -8,6 +17,7 @@ urlpatterns =[
     path('amenities/', amenities_page, name='amenities_page'),
     path('add-amenity/', add_amenity, name='add_amenity'),
       path('get-amenities/',get_amenities, name='get_amenities'),
+      path("delete-amenity/<int:amenity_id>/", delete_amenity, name="delete_amenity"),
     path('save-selected-amenities/', save_selected_amenities, name='save_selected_amenities'),
     
     path("rooms/", room_page, name="room_page"),

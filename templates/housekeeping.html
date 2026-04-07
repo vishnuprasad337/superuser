@@ -264,7 +264,9 @@
             </div>
             <div class="card-body">
                 <div id="roomsGrid" class="room-grid">
+                    <!-- Only pending rooms (dirty, cleaning, maintenance) will be shown here -->
                     {% for room in rooms %}
+                    {% if room.status == 'dirty' or room.status == 'cleaning' or room.status == 'maintenance' %}
                     <div class="room-card {{ room.status }}" data-status="{{ room.status }}" data-room-id="{{ room.id }}" data-room-number="{{ room.number }}">
                         <div class="room-number">Room {{ room.number }}</div>
                         <div class="room-type">{{ room.room_type }}</div>
@@ -286,8 +288,9 @@
                             </label>
                         </div>
                     </div>
+                    {% endif %}
                     {% empty %}
-                    <div class="empty" style="grid-column:1/-1"><i class="fas fa-door-closed"></i><p>No rooms found</p></div>
+                    <div class="empty" style="grid-column:1/-1"><i class="fas fa-check-circle"></i><p>No pending rooms! All rooms are clean and available.</p></div>
                     {% endfor %}
                 </div>
             </div>
@@ -351,7 +354,7 @@
         </div>
     </div>
 
-    <!-- Inventory Panel - Units as Dropdown (Modified) -->
+    <!-- Inventory Panel -->
     <div class="panel" id="panel-inventory">
         <div class="topbar">
             <div class="topbar-left">
@@ -412,7 +415,9 @@
                     <select id="issueRoom" class="form-control">
                         <option value="">Select room number</option>
                         {% for room in rooms %}
+                        {% if room.status == 'dirty' or room.status == 'cleaning' or room.status == 'maintenance' %}
                         <option value="{{ room.number }}">Room {{ room.number }} - {{ room.room_type }}</option>
+                        {% endif %}
                         {% endfor %}
                     </select>
                 </div>
@@ -437,7 +442,7 @@
     </div>
 </main>
 
-<!-- Add/Edit Inventory Modal with UNIT as DROPDOWN (modified) -->
+<!-- Add/Edit Inventory Modal -->
 <div id="inventoryModal" class="modal-backdrop">
     <div class="modal">
         <div class="modal-header">
@@ -465,7 +470,7 @@
                     <input type="number" id="invQuantity" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Unit * (Dropdown)</label>
+                    <label class="form-label">Unit *</label>
                     <select id="invUnit" class="form-control" required>
                         <option value="pieces">Pieces</option>
                         <option value="bottles">Bottles</option>
@@ -561,7 +566,6 @@ function switchPanel(panelName) {
     const activeBtn = document.querySelector(`.nav-btn[data-panel="${panelName}"]`);
     if (activeBtn) activeBtn.classList.add('active');
     
-    // Refresh inventory when panel is opened
     if (panelName === 'inventory') {
         fetchInventory();
     }
@@ -617,7 +621,6 @@ async function submitMaintenance(event) {
     finally { submitBtn.disabled = false; submitBtn.innerHTML = originalText; }
 }
 
-// ========== INVENTORY FUNCTIONS WITH get_inventory API ==========
 async function fetchInventory() {
     try {
         const response = await fetch('/api/get-inventory/', {
@@ -767,7 +770,6 @@ function editInventoryItem(itemId) {
     document.getElementById('invReorderLevel').value = item.reorder_level || 10;
     document.getElementById('invDescription').value = item.description || '';
     
-    // Find room select option by room number
     const roomSelect = document.getElementById('invRoomId');
     for (let i = 0; i < roomSelect.options.length; i++) {
         if (roomSelect.options[i].text.includes(item.room_number || '')) {
@@ -802,7 +804,6 @@ async function deleteInventoryItem(itemId) {
     }
 }
 
-// Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.start-cleaning').forEach(cb => {
         cb.addEventListener('change', function() { 
@@ -815,7 +816,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Initial inventory load
     fetchInventory();
 });
 

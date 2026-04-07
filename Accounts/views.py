@@ -2,10 +2,108 @@ from django.shortcuts import render, redirect
 from .models import Hotel,Amenity,Room,Department,Staff,Task,Shift,Guest,Booking,Payment,RoomUnit,InventoryItem
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.contrib.auth import authenticate ,login
+from django.contrib.auth.decorators import login_required
 import json
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from datetime import timedelta
+from django.db.models import Count, Sum, Q
+from django.shortcuts import get_object_or_404
 def index(request):
     return render(request, "index.html")
+##----------------------Superadmin Authentication----------------------
+
+def admin_login(request): 
+    error = None
+
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            if user.is_superuser:
+                login(request, user)
+                return redirect("superuser_dashboard")
+            else:
+                error = "Not authorized as admin"
+        else:
+            error = "Invalid credentials"
+
+    return render(request, "admin/login.html", {"error": error})
+
+
+
+
+@login_required
+def superuser_dashboard(request):
+    if not request.user.is_superuser:
+        return redirect("admin_login")
+
+    
+    hotels = Hotel.objects.all().order_by('-id')
+
+    total_hotels = hotels.count()
+    active_hotels = hotels.filter(is_approved=True).count()
+    pending_hotels = hotels.filter(is_approved=False).count()
+
+    pending_hotel_list = hotels.filter(is_approved=False)
+
+    
+    amenities = Amenity.objects.all()
+
+    context = {
+        "hotels": hotels,
+        "total_hotels": total_hotels,
+        "active_hotels": active_hotels,
+        "pending_hotels": pending_hotels,
+        "pending_hotel_list": pending_hotel_list,
+        "amenities": amenities,
+    }
+
+    return render(request, "admin/dashboard.html", context)
+@login_required
+def approve_hotel(request, id):
+    if not request.user.is_superuser:
+        return redirect("admin_login")
+
+    hotel = get_object_or_404(Hotel, id=id)
+    hotel.is_approved = True
+    hotel.save()
+
+    return redirect("superuser_dashboard")
+
+
+@login_required
+def reject_hotel(request, id):
+    if not request.user.is_superuser:
+        return redirect("admin_login")
+
+    hotel = get_object_or_404(Hotel, id=id)
+    hotel.delete()
+def save_hotel_modules(request, hotel_id):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            module_names = data.get("modules", [])
+
+            hotel = Hotel.objects.get(id=hotel_id)
+            amenities = Amenity.objects.filter(name__in=module_names)
+
+            hotel.properties.set(amenities)  
+
+            return JsonResponse({"success": True})
+
+        except Hotel.DoesNotExist:
+            return JsonResponse({"error": "Hotel not found"}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+##----------------------Hotel Authentication----------------------
 def hotel_register(request):
     approved = None
     error = None
@@ -32,7 +130,7 @@ def hotel_register(request):
             password = request.POST.get("password")
             image = request.FILES.get("image")
 
-            Hotel.objects.create(
+            hotel= Hotel.objects.create(
                 hotel_name=hotel_name,
                 email=email,
                 owner_name=owner_name,
@@ -44,7 +142,7 @@ def hotel_register(request):
                 password=password,
                 image=image
             )
-
+            
             success = "Registration sent for admin approval!"
 
     return render(request, "register.html", {
@@ -85,46 +183,80 @@ def amenities_page(request):
 
 
 
-@csrf_exempt
+
+
+@require_POST
 def add_amenity(request):
-    
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            name = data.get("name")
-            
-            
-            
-            if not name:
-                return JsonResponse({"error": "Name required"}, status=400)
-            
-            
-            amenity, created = Amenity.objects.get_or_create(name=name)
-            
-            print(f"[DEBUG] Amenity {'created' if created else 'retrieved'}: ID={amenity.id}, Name={amenity.name}")
-            
-            return JsonResponse({
-                "id": amenity.id,
-                "name": amenity.name,
-                "created": created
-            })
-        except Exception as e:
-            print(f"[ERROR] Exception in add_amenity: {str(e)}")
-            return JsonResponse({"error": str(e)}, status=500)
-    
-    return JsonResponse({"error": "Method not allowed"}, status=405)
-
-
-def get_amenities(request):
-    
     try:
-        amenities = Amenity.objects.all().values("id", "name")
+        data = json.loads(request.body)
+
+        name = data.get("name")
+        description = data.get("description", "")
+        amenity_type = data.get("amenity_type", "default")
+
+        
+        if not name:
+            return JsonResponse({"error": "Name is required"}, status=400)
+
+        if amenity_type not in ["default", "premium"]:
+            return JsonResponse({"error": "Invalid amenity_type"}, status=400)
+
+        
+        amenity, created = Amenity.objects.get_or_create(
+            name=name,
+            defaults={
+                "description": description,
+                "amenity_type": amenity_type
+            }
+        )
+
+        if not created:
+            amenity.description = description
+            amenity.amenity_type = amenity_type
+            amenity.save()
+
         return JsonResponse({
-            "amenities": list(amenities)
+            "id": amenity.id,
+            "name": amenity.name,
+            "description": amenity.description,
+            "amenity_type": amenity.amenity_type,
+            "created": created
         })
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+def get_amenities(request):
+    try:
+        default_amenities = Amenity.objects.filter(
+            amenity_type="default"
+        ).values("id", "name", "description")
+
+        premium_amenities = Amenity.objects.filter(
+            amenity_type="premium"
+        ).values("id", "name", "description")
+
+        return JsonResponse({
+            "default": list(default_amenities),
+            "premium": list(premium_amenities)
+        }, status=200)
+
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
+@require_http_methods(["DELETE"])
+def delete_amenity(request, amenity_id):
+    try:
+        amenity = get_object_or_404(Amenity, id=amenity_id)
+
+        amenity.delete()
+
+        return JsonResponse({
+            "message": "Amenity deleted successfully",
+            "id": amenity_id
+        }, status=200)
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 @csrf_exempt
@@ -298,7 +430,7 @@ def get_rooms(request):
             # Create list of room units with their numbers, status, and color
             units_list = []
             for unit in room_units:
-                # Determine color based on status
+               
                 if unit.status == "Available":
                     color = "green"
                     status_display = "Available"
@@ -594,43 +726,42 @@ def staff_login(request):
     if request.method == "POST":
         email = request.POST.get("email")
         password = request.POST.get("password")
-        selected_dept = request.POST.get("department").lower()
 
-        try:
-            staff = Staff.objects.get(email=email, password=password)
+       
+        staff = Staff.objects.filter(email=email).select_related("department", "hotel").first()
 
-            actual_dept = staff.department.name.lower()
-
-            
-            if selected_dept != actual_dept:
-                return render(request, "staff_login.html", {
-                    "error": "Department mismatch"
-                })
-
-            
-            request.session["staff_id"] = staff.id
-            request.session["department"] = actual_dept
-
-            
-            if actual_dept == "housekeeping":
-                return redirect("housekeeping_dashboard")
-
-            elif actual_dept == "hr":
-                return redirect("hr_dashboard")
-
-            elif actual_dept == "front desk":
-                return redirect("frontoffice_dashboard")
-
-            elif actual_dept == "accountant":
-                return redirect("accountant_dashboard")
-
-            else:
-                return redirect("staff_login")
-
-        except Staff.DoesNotExist:
+        if not staff:
             return render(request, "staff_login.html", {
-                "error": "Invalid credentials"
+                "error": "Invalid email or password"
             })
+
+       
+        if staff.password != password:
+            return render(request, "staff_login.html", {
+                "error": "Invalid email or password"
+            })
+
+       
+        request.session["staff_id"] = staff.id
+        request.session["department"] = staff.department.name.lower()
+        request.session["hotel_id"] = staff.hotel.id   
+        dept = staff.department.name.lower()
+
+        
+        if dept == "housekeeping":
+            return redirect("housekeeping_dashboard")
+
+        elif dept == "hr":
+            return redirect("hr_dashboard")
+
+        elif dept in ["front desk", "front office"]:
+            return redirect("frontoffice_dashboard")
+
+        elif dept == "accountant":
+            return redirect("accountant_dashboard")
+
+        else:
+            return redirect("staff_dashboard")  # fallback
 
     return render(request, "staff_login.html")
 #----------------------HOUSEKEEPING MODULE----------------------
@@ -1294,3 +1425,4 @@ def assign_housekeeping_task(request):
             return JsonResponse({"error": str(e)}, status=500)
     
     return JsonResponse({"error": "Method not allowed"}, status=405)
+
