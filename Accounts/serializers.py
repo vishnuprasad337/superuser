@@ -1,63 +1,104 @@
+
 from rest_framework import serializers
-from django.contrib.auth.models import User
-from .models import SuperUser, Staff
-class SuperUserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+from .models import Booking, Guest, Room, RoomUnit, Payment
+from datetime import datetime
+from rest_framework import serializers
+from .models import Booking, Guest, Room, RoomUnit, Payment
+from datetime import datetime
 
-    class Meta:
-        model = SuperUser
-        fields = ['id', 'name', 'email', 'password']
 
-    def create(self, validated_data):
-        password = validated_data.pop('password')
-        user = SuperUser(**validated_data)
-        user.set_password(password)  # hashing
-        user.save()
-        return user
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'email']
-class StaffSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(write_only=True)
-    password = serializers.CharField(write_only=True)
+class BookingSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    phone = serializers.CharField()
+    email = serializers.CharField(required=False, allow_blank=True)
+    nationality = serializers.CharField(required=False, allow_blank=True)
 
-    user = UserSerializer(read_only=True)
+    room_type = serializers.CharField()
+    check_in = serializers.DateField()
+    check_out = serializers.DateField()
+    guests = serializers.IntegerField(default=1)
 
-    class Meta:
-        model = Staff
-        fields = [
-            'id',
-            'staff_id',
-            'full_name',
-            'email',
-            'password',
-            'phone',
-            'dob',
-            'position',
-            'department',
-            'hotel',
-            'salary',
-            'address',
-            'photo_url',
-            'emergency_contact',
-            'joining_date',
-            'status',
-            'user'
-        ]
+    requests = serializers.CharField(required=False, allow_blank=True)
+    id_photo = serializers.ImageField(required=False)
 
     def create(self, validated_data):
-        email = validated_data.pop('email')
-        password = validated_data.pop('password')
+        request = self.context.get("request")
+        staff = self.context.get("staff")
+        hotel = staff.hotel
 
-        # Create Django User
-        user = User.objects.create_user(
-            username=email,
-            email=email,
-            password=password
+        name = validated_data.get("name")
+        phone = validated_data.get("phone")
+        email = validated_data.get("email", "")
+        nationality = validated_data.get("nationality", "")
+        room_type = validated_data.get("room_type")
+        check_in = validated_data.get("check_in")
+        check_out = validated_data.get("check_out")
+        guests = validated_data.get("guests", 1)
+        requests_text = validated_data.get("requests", "")
+        id_photo = validated_data.get("id_photo", None)
+
+        # ✅ Guest handling
+        guest, created = Guest.objects.get_or_create(
+            phone=phone,
+            hotel=hotel,
+            defaults={
+                "full_name": name,
+                "email": email,
+                "nationality": nationality,
+                "id_photo": id_photo
+            }
         )
 
-        # Create Staff
-        staff = Staff.objects.create(user=user, **validated_data)
+        if not created and guest.full_name != name:
+            guest.full_name = name
+            guest.save()
 
-        return staff
+        if id_photo and not guest.id_photo:
+            guest.id_photo = id_photo
+            guest.save()
+
+        # ✅ Room fetch
+        room = Room.objects.filter(hotel=hotel, room_type=room_type).first()
+        if not room:
+            raise serializers.ValidationError(f"Room type '{room_type}' not found")
+
+        # ✅ Room unit
+        unit = RoomUnit.objects.filter(room=room, status="Available").first()
+        if not unit:
+            raise serializers.ValidationError(f"No available rooms for type {room_type}")
+
+        # ✅ Nights calculation
+        nights = (check_out - check_in).days
+        if nights <= 0:
+            raise serializers.ValidationError("Check-out must be after check-in")
+
+        unit.status = "Reserved"
+        unit.save()
+
+        # ✅ Booking create
+        booking = Booking.objects.create(
+            hotel=hotel,
+            guest=guest,
+            room=room,
+            room_unit=unit,
+            check_in=check_in,
+            check_out=check_out,
+            guests_count=guests,
+            special_requests=requests_text,
+            status="confirmed",
+            created_by=staff
+        )
+
+        # ✅ Payment
+        room_charges = float(room.price) * nights
+        tax = room_charges * 0.18
+        total = room_charges + tax
+
+        Payment.objects.create(
+            booking=booking,
+            room_charges=room_charges,
+            tax=tax,
+            total_amount=total
+        )
+
+        return booking

@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import *
+from django.contrib.auth import views as auth_views
 urlpatterns =[
     # ADMIN
     path("superadmin/", admin_login, name="admin_login"),
@@ -27,12 +28,20 @@ urlpatterns =[
     path("staff/", staff_page, name="staff_page"),
      path("add-department/", add_department, name="add_department"),
     path("add-staff/", add_staff, name="add_staff"),
+     path('delete-staff/', delete_staff, name='delete_staff'),
+     path('update-staff/', update_staff, name='update_staff'),
+      path('update-staff-profile/', update_staff_profile, name='update_staff_profile'),
+     path('get-staff/', get_staff, name='get_staff'),
     path("assign-task/", assign_task, name="assign_task"),
     path("get-tasks/", get_tasks, name="get_tasks"),
+     path("get-bookings/", get_bookings, name="get_bookings"),
+     path("gets-inventory/", gets_inventory, name="gets_inventory"),
+
     path("get-departments/", get_departments, name="get_departments"),
     path("get-staff/", get_staff, name="get_staff"),
     path("assign-shift/", assign_shift, name="assign_shift"),
     path("update-shift/", update_shift, name="update_shift"),
+     path('weekly-schedule/', weekly_schedule, name='weekly_schedule'),
     path("get-shifts/", get_shifts, name="get_shifts"),
     path("staff-by-shift/", staff_by_shift, name="staff_by_shift"),
     # STAFF LOGIN
@@ -60,7 +69,44 @@ urlpatterns =[
 
     path('api/update-inventory/<int:item_id>/', update_inventory, name='update_inventory'),
     path('api/delete-inventory/<int:item_id>/', delete_inventory, name='delete_inventory'),
+   # Hr Dashboaed
+   path('attendance/mark/', mark_attendance, name='mark_attendance'),
+    path('attendance/live/', live_attendance, name='live_attendance'),
+    path('attendance/daily/', daily_report, name='daily_report'),
+    path('attendance/monthly/', monthly_report, name='monthly_report'),
+    path("leave/update/<int:leave_id>/", update_leave_status, name="update_leave_status"),
+    path("leave/requests/", leave_requests, name="leave_requests"),
+    path("leave/apply/", apply_leave, name="apply_leave"),
+    path("payroll/generate/", generate_payroll),
+   path("payroll/dashboard/",payroll_dashboard),
+   path("payroll/payslip/<int:payroll_id>/",payslip),
+
+  # forgot password
+
+  
+
+      path('password-reset/',
+     auth_views.PasswordResetView.as_view(
+         template_name='auth/password_reset_form.html',
+         success_url='/password-reset/',
+         extra_context={'show_message': True}  
+     ),
+     name='password_reset'),
 
     
+    path('reset/<uidb64>/<token>/',
+         auth_views.PasswordResetConfirmView.as_view(
+             template_name='auth/password_reset_confirm.html',
+             success_url='/reset/done/'
+         ),
+         name='password_reset_confirm'),
+
+
+    path('reset/done/',
+         auth_views.PasswordResetCompleteView.as_view(
+             template_name='auth/password_reset_confirm.html'
+         ),
+         name='password_reset_complete'),
 ]
+
  

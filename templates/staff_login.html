@@ -163,18 +163,36 @@
             color: #3b82f6;
         }
 
-        select.form-control {
-            padding: 12px 16px;
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 16px center;
-            background-size: 20px;
+        /* Forgot password row */
+        .forgot-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: -8px;
+            margin-bottom: 20px;
         }
 
-        select.form-control option {
-            padding: 10px;
+        .forgot-link {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #1a56db;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(26, 86, 219, 0.05);
+            padding: 5px 10px;
+            border-radius: 30px;
+        }
+
+        .forgot-link i {
+            font-size: 0.7rem;
+        }
+
+        .forgot-link:hover {
+            color: #1e40af;
+            background: rgba(26, 86, 219, 0.12);
+            text-decoration: underline;
         }
 
         .btn-login {
@@ -379,6 +397,12 @@
                         </div>
                     </div>
 
+                    <!-- Forgot Password Link - redirects to Django password reset view -->
+                    <div class="forgot-row">
+                        <a href="/password-reset/" class="forgot-link" id="forgotPasswordLink">
+                            <i class="fas fa-key"></i> Forgot password?
+                        </a>
+                    </div>
                     
                     <button type="submit" class="btn-login" id="loginBtn">
                         <i class="fas fa-sign-in-alt"></i> Login to Dashboard
@@ -441,6 +465,47 @@
                 this.parentElement.classList.remove('focused');
             });
         });
+
+        // Optional: Forgot password link handler with optional client-side validation
+        // This just uses the Django URL pattern path('password-reset/', ...)
+        // The link already points to /password-reset/ which matches the given URL pattern.
+        // If you need to preserve query parameters or add email pre-fill, uncomment below.
+        const forgotLink = document.getElementById('forgotPasswordLink');
+        if (forgotLink) {
+            forgotLink.addEventListener('click', function(e) {
+                // Optional: Pre-populate the reset email field with the email entered in login form
+                const emailInput = document.querySelector('input[name="email"]');
+                let targetUrl = this.getAttribute('href');
+                
+                if (emailInput && emailInput.value && emailInput.value.trim() !== '') {
+                    // If email is entered, we can optionally pass it as a query param
+                    // Django's default PasswordResetView doesn't accept email as GET param,
+                    // but custom implementations might. For standard Django, just redirect.
+                    // This is just a UX enhancement - the reset page will ask for email anyway.
+                    // We'll keep it simple: just redirect to the password reset page.
+                    // The default Django password reset view will handle the rest.
+                }
+                // The browser will naturally follow the href="/password-reset/"
+                // which matches the Django URL pattern: path('password-reset/', auth_views.PasswordResetView.as_view(), name='password_reset')
+            });
+        }
+
+        // Additional protection: If the current page is loaded from a subpath (like /staff/login/),
+        // ensure the forgot password link points to the correct absolute path.
+        // Since we used "/password-reset/" (starting with slash), it's absolute to domain root.
+        // This matches typical Django deployment where password-reset is at root or under site URL.
+        // If your Django app is not mounted at root (e.g., under /erp/), you might need to adjust.
+        // But given the URL pattern is likely at root or namespaced, we keep as is.
+        // For extra robustness, we could dynamically build URL based on <base> tag, but standard Django works.
+        
+        // Smooth transition for the forgot link
+        const style = document.createElement('style');
+        style.textContent = `
+            .forgot-link {
+                transition: all 0.2s ease;
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
