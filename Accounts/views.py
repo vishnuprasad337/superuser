@@ -1690,6 +1690,7 @@ SHIFT_TIMINGS = {
     "Night": (time(22, 0), time(6, 0)),
 }
 
+
 @require_POST
 def mark_attendance(request):
     staff_id = request.session.get("staff_id")
@@ -1711,7 +1712,6 @@ def mark_attendance(request):
         date=today
     )
 
-   
     shift_obj = Shift.objects.filter(staff=staff, date=today).first()
     shift_name = shift_obj.shift if shift_obj else None
 
@@ -1720,7 +1720,6 @@ def mark_attendance(request):
     if shift_name in SHIFT_TIMINGS:
         shift_start, shift_end = SHIFT_TIMINGS[shift_name]
 
-   
     if not attendance.check_in:
         attendance.check_in = now
 
@@ -1743,25 +1742,20 @@ def mark_attendance(request):
         attendance.check_out = now
 
         working_hours = (attendance.check_out - attendance.check_in).total_seconds() / 3600
-
         overtime = 0
 
-      
         if shift_start and shift_end:
-            shift_start_dt = datetime.combine(today, shift_start)
-            shift_end_dt = datetime.combine(today, shift_end)
+            tz = timezone.get_current_timezone()
+
+            shift_start_dt = timezone.make_aware(datetime.combine(today, shift_start), tz)
+            shift_end_dt = timezone.make_aware(datetime.combine(today, shift_end), tz)
 
             if shift_end < shift_start:
                 shift_end_dt += timedelta(days=1)
 
-           
             if attendance.check_out > shift_end_dt:
                 overtime = (attendance.check_out - shift_end_dt).total_seconds() / 3600
 
-        attendance.overtime_hours = round(overtime, 2)
-
-       
-        if shift_start and shift_end:
             shift_duration = (shift_end_dt - shift_start_dt).total_seconds() / 3600
 
             if working_hours < (shift_duration / 2):
@@ -1769,6 +1763,7 @@ def mark_attendance(request):
             elif attendance.status != "Late":
                 attendance.status = "Present"
 
+        attendance.overtime_hours = round(overtime, 2)
         attendance.save()
 
         return JsonResponse({
@@ -1785,8 +1780,6 @@ def mark_attendance(request):
         "success": False,
         "message": "Already checked in and out"
     })
-
-
 def live_attendance(request):
     hotel_id = request.session.get("hotel_id")
 

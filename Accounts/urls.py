@@ -9,7 +9,7 @@ urlpatterns =[
     path("reject-hotel/<int:id>/", reject_hotel, name="reject_hotel"),
     path('save-hotel-modules/<int:hotel_id>/',save_hotel_modules, name='save_hotel_modules'),
 
-    
+     
 
     path("", index, name="index"),
      path("register/", hotel_register, name="hotel_register"),
